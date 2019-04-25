@@ -1,6 +1,4 @@
-#!/bin/bash
-
-set -e
+import subprocess
 
 # NOTE - Intended for Google's Debian Stretch image
 # NOTE - The current wrapper assumes you have at least 25G of RAM (e.g. n1-highmem-4)
@@ -30,13 +28,24 @@ JAR_DIR="${INSTALL_DIR}/jar"
 CONFIG_DIR="${INSTALL_DIR}/config"
 LCONFIG="${CONFIG_DIR}/jes.conf"
 
-# Install cromwell dependencies and startup script dependencies
-SCRIPT_DEPS="curl"
-CROMWELL_DEPS="default-jdk default-mysql-client-core"
+def install_packages():
 
-apt-get update
-apt-get dist-upgrade -y
-apt-get install -y ${SCRIPT_DEPS} ${CROMWELL_DEPS}
+    packages = [
+        'curl',
+	'default-jdk',
+	'default-mysql-client-core',
+	'vim',
+        ]
+
+    while subprocess.call(['apt-get', 'update']):
+        print "Failed to apt-get update. Trying again in 5 seconds"
+        time.sleep(5)
+
+    # FIXME needed? apt-get dist-upgrade -y
+
+    while subprocess.call(['apt-get', 'install', '-y'] + packages):
+        print "Failed to install packages with apt-get install. Trying again in 5 seconds"
+        time.sleep(5)
 
 # Prepare cromwell location on VM
 mkdir -p ${BIN_DIR}/ ${CONFIG_DIR}/ ${JAR_DIR}
@@ -71,3 +80,8 @@ PATHSETTER
 # This will end up in /var/log/syslog or /var/log/daemon.log
 java -version
 java -jar ${JAR_DIR}/cromwell-${VERSION}.jar
+
+if __name__ == '__main__':
+    install_packages()
+    print "Startup script...DONE"
+#-- __main__
