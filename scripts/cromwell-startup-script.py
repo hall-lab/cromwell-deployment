@@ -1,4 +1,4 @@
-import subprocess
+import requests, subprocess
 
 # NOTE - Intended for Google's Debian Stretch image
 # NOTE - The current wrapper assumes you have at least 25G of RAM (e.g. n1-highmem-4)
@@ -47,12 +47,30 @@ def install_packages():
         print "Failed to install packages with apt-get install. Trying again in 5 seconds"
         time.sleep(5)
 
-# Prepare cromwell location on VM
-mkdir -p ${BIN_DIR}/ ${CONFIG_DIR}/ ${JAR_DIR}
+#-- install_packages
 
-# Download cromwell and womtool from Github
-curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/cromwell-${VERSION}.jar && mv cromwell-${VERSION}.jar ${JAR_DIR}/
-curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
+def install_cromwell():
+    #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/cromwell-${VERSION}.jar && mv cromwell-${VERSION}.jar ${JAR_DIR}/
+    #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
+    if not os.path.exists(JAR_DIR):
+        os.makedirs(JAR_DIR)
+    os.chdir(JAR_DIR)
+
+    for name in "cromwell", "womtool":
+        jar_basename = name + "-" + VERSION + "." + "jar"
+        if os.path.exists( os.path.join(JAR_DIR, jar_basename) ):
+            print "{} already installed...SKIPPING".format(jar_basename)
+            continue
+        url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", VERSION, jar_basename])
+        print "Intalling {} from {}".format(jar_basename, url)
+        result = requests.get(url)
+        if not response.ok: raise Exception("Failed to get {} from URL: {}".format(jar_basename, url))
+        with open(jar_basename, "wb") as f:
+            f.write(r.content)
+
+    print "Install cromwell...DONE"
+
+#-- install_cromwell
 
 gsutil cp ${CONFIG} ${LCONFIG}
 perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
@@ -62,7 +80,6 @@ perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
 cat > ${BIN_DIR}/cromwell-server <<SCRIPT
 #!/bin/bash
 
-set -u
 
 MYSQL=PW LOG_MODE=standard java -Xmx40000M -Dconfig.file=${LCONFIG} -jar ${JAR_DIR}/cromwell-${VERSION}.jar server 2>&1
 SCRIPT
@@ -83,5 +100,6 @@ java -jar ${JAR_DIR}/cromwell-${VERSION}.jar
 
 if __name__ == '__main__':
     install_packages()
+    install_cromwell()
     print "Startup script...DONE"
 #-- __main__
