@@ -1,4 +1,4 @@
-# Cromwell Server/Database Deployer
+# Cromwell Server/Database Deployer (`cromployer`)
 
 This repository contains scripts and resources to deploy a [cromwell][0] server and database.  It's designed for [Google Cloud][1] at the moment.
 
