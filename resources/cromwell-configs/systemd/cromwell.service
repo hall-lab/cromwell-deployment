@@ -1,0 +1,17 @@
+[Unit]
+Description=Cromwell Server
+After=network.target
+
+[Service]
+Type=exec
+
+User=root
+WorkingDirectory=/opt/ccdg/cromwell-36.1/
+ExecStart=/bin/bash /opt/ccdg/cromwell-36.1/bin/cromwell-server
+Restart=always
+
+TimeoutStopSec=10
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
