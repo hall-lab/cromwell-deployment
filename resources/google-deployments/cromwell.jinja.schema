@@ -1,0 +1,58 @@
+info:
+  title: Cromwell
+  author: Hall Lab
+  description: |
+    A template for creating a cromwell server and corresponding cloudsql instance
+
+  required:
+    - cromwell_server_name
+    - cromwell_cloudsql_password
+    - service_account_email
+
+properties:
+    cromwell_server_name:
+      type: string
+      description: Name of the VM instance to run the cromwell server. Will also be used to derive names for other resources.
+
+    zone:
+      type: string
+      description: Zone to run instances in.
+      default: us-central1-1
+
+    cromwell_server_machine_type:
+      type: string
+      description: Machine type for the cromwell server.
+      default: n1-standard-8
+
+    service_account_email:
+      type: string
+      description: Service account for the cromwell server to use.
+
+    cromwell_server_boot_disk_size:
+      description: Size in GB of the cromwell server boot disk
+      type: integer
+      default: 200
+
+    cromwell_cloudsql_instance_type:
+      description: Instance type for the cloudsql instance.
+      type: string
+      default: db-n1-standard-8
+
+    cromwell_cloudsql_initial_size:
+      description: Size in GB of initial database storage.
+      type: integer
+      default: 1000
+
+    cromwell_cloudsql_password:
+      type: string
+
+      description: Password for mysql root user.
+    cromwell_database_name:
+      description: Name of MySQL database to create in the CloudSQL instance.
+      type: string
+      default: cromwell
+
+
+
+
+
