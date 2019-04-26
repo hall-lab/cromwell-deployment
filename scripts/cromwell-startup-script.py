@@ -13,18 +13,15 @@ import requests, subprocess
 #     --scopes https://www.googleapis.com/auth/cloud-platform
 
 
+CROMWELL_VERSION='@CROMWELL_VERSION@'
 GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
-
-# Do this from instance metadata
-# Make sure to set on instance start up
-VERSION=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/cromwell-version -H "Metadata-Flavor: Google")
 
 # Note also that we still need configuration file.
 # This should be a bucket URL readable by the service account running this instance
 CONFIG=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/cromwell-config -H "Metadata-Flavor: Google")
 DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
 
-INSTALL_DIR="/opt/ccdg/cromwell-${VERSION}"
+INSTALL_DIR='/opt/ccdg/cromwell-@CROMWELL_VERSION@'
 BIN_DIR="${INSTALL_DIR}/bin"
 JAR_DIR="${INSTALL_DIR}/jar"
 CONFIG_DIR="${INSTALL_DIR}/config"
@@ -64,19 +61,17 @@ def install_packages():
 def install_cromwell():
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/cromwell-${VERSION}.jar && mv cromwell-${VERSION}.jar ${JAR_DIR}/
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
-    if not os.path.exists(JAR_DIR):
-        os.makedirs(JAR_DIR)
+    print "Install cromwell..."
     os.chdir(JAR_DIR)
-
     for name in "cromwell", "womtool":
-        jar_basename = name + "-" + VERSION + "." + "jar"
+        jar_basename = name + "-" + CROMWELL_VERSION + "." + "jar"
         if os.path.exists( os.path.join(JAR_DIR, jar_basename) ):
             print "{} already installed...SKIPPING".format(jar_basename)
             continue
-        url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", VERSION, jar_basename])
+        url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", CROMWELL_VERSION, jar_basename])
         print "Intalling {} from {}".format(jar_basename, url)
-        result = requests.get(url)
-        if not response.ok: raise Exception("Failed to get {} from URL: {}".format(jar_basename, url))
+        response = requests.get(url)
+        if not response.ok: raise Exception("GET failed for {}".format(url))
         with open(jar_basename, "wb") as f:
             f.write(r.content)
 
@@ -107,7 +102,7 @@ cat > ${BIN_DIR}/cromwell-server <<SCRIPT
 #!/bin/bash
 
 
-MYSQL=PW LOG_MODE=standard java -Xmx40000M -Dconfig.file=${LCONFIG} -jar ${JAR_DIR}/cromwell-${VERSION}.jar server 2>&1
+MYSQL=PW LOG_MODE=standard java -Xmx40000M -Dconfig.file=${LCONFIG} -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar server 2>&1
 SCRIPT
 chmod a+x ${BIN_DIR}/cromwell-server
 
@@ -122,7 +117,7 @@ PATHSETTER
 # verify things
 # This will end up in /var/log/syslog or /var/log/daemon.log
 java -version
-java -jar ${JAR_DIR}/cromwell-${VERSION}.jar
+java -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar
 
 if __name__ == '__main__':
     create_directories()
