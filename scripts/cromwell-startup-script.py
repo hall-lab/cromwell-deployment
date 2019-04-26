@@ -1,31 +1,12 @@
-import requests, subprocess
-
-# NOTE - Intended for Google's Debian Stretch image
-# NOTE - The current wrapper assumes you have at least 25G of RAM (e.g. n1-highmem-4)
-# NOTE - This script reads from a bucket. Make sure permissions are set for the VMs service account to allow this.
-# NOTE - Cromwell needs to write to a bucket, make sure scopes on the VM are set appropriately
-# EXAMPLE (TODO - scopes may be too broad)
-# gcloud compute instances create cromwell \
-#    --image-project=debian-cloud
-#    --image-family=debian-9
-#     --metadata-from-file startup-script=startup.sh
-#     --metadata cromwell-version=34,cromwell-config=gs://some/gcs/path/to/config,mysql-cromwell-password-file=gs://some_bucket/password.txt \
-#     --scopes https://www.googleapis.com/auth/cloud-platform
-
+import os, requests, subprocess
 
 CROMWELL_VERSION='@CROMWELL_VERSION@'
+INSTALL_DIR = os.path.join('opt', 'ccdg', 'cromwell-@CROMWELL_VERSION@')
+BIN_DIR = os.path.join(INSTALL_DIR, "bin")
+JAR_DIR = os.path.join(INSTALL_DIR, "jar")
+CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
+PAPI_CONFIG = os.path.join(CONFIG_DIR}, "papi.conf")
 GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
-
-# Note also that we still need configuration file.
-# This should be a bucket URL readable by the service account running this instance
-CONFIG=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/cromwell-config -H "Metadata-Flavor: Google")
-DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-
-INSTALL_DIR='/opt/ccdg/cromwell-@CROMWELL_VERSION@'
-BIN_DIR="${INSTALL_DIR}/bin"
-JAR_DIR="${INSTALL_DIR}/jar"
-CONFIG_DIR="${INSTALL_DIR}/config"
-LCONFIG="${CONFIG_DIR}/jes.conf"
 
 def create_directories():
     print "Create directories..."
@@ -82,6 +63,7 @@ def install_cromwell():
 def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
+    #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
     papi_conf_path = os.path.join(CONFIG_DIR, 'papi.conf')
     if os.path.exists(papi_conf_path):
         print "Papi/cromwell config already installed at {}".format(papi_conf_path)
