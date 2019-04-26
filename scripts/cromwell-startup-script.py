@@ -5,7 +5,7 @@ INSTALL_DIR = os.path.join('opt', 'ccdg', 'cromwell-@CROMWELL_VERSION@')
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
 CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
-PAPI_CONFIG = os.path.join(CONFIG_DIR}, "papi.conf")
+PAPI_CONFIG = os.path.join(CONFIG_DIR}, "papi.v2.conf")
 GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
 
 def create_directories():
@@ -64,17 +64,7 @@ def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-    papi_conf_path = os.path.join(CONFIG_DIR, 'papi.conf')
-    if os.path.exists(papi_conf_path):
-        print "Papi/cromwell config already installed at {}".format(papi_conf_path)
-        return
-
-    print "Install papi/cromwell config to {}".format(papi_conf_path)
-    url = "/".join([GOOGLE_URL, 'papi_conf'])
-    response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
-    if not response.ok: raise Exception("GET failed for {}".format(url))
-    with open(papi_conf_path, 'w') as f:
-        f.write(response.content)
+    _fetch_and_install_from_metadata(name='papi_conf', fn=os.path.join(CONFIG_DIR, 'papi.conf'))
 
 #-- install_cromwell_config
 
@@ -88,6 +78,30 @@ def add_cromwell_profile():
     with open(fn, "w") as f:
         f.write('PATH={}:"${{PATH}}"'.format(BIN_DIR) + "\n")
 
+#-- add_cromwell_profile
+
+def add_and_start_cromwell_service():
+    _fetch_and_install_from_metadata(name='cromwell_service', fn=os.path.join('etc', 'systemd', 'system', 'cromwell.service'))
+    print "Start cromwell service..."
+    systemctl daemon-reload
+    systemctl start cromwell-server
+    journalctl -u cromwell-server
+
+#-- add_cromwell_service
+
+def _fetch_and_install_from_metadata(name, fn):
+    if os.path.exists(fn):
+        print "Already installed {} to {} ... SKIPPING".format(name, fn)
+        return
+    print "Install {} to {}".format(name, fn)
+    url = "/".join([GOOGLE_URL, name])
+    response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
+    if not response.ok: raise Exception("GET failed for {}".format(url))
+    with open(fn, 'w') as f:
+        f.write(response.content)
+
+#-- _fetch_and_install_from_metadata
+
 # verify things
 # This will end up in /var/log/syslog or /var/log/daemon.log
 #java -version
@@ -99,5 +113,6 @@ if __name__ == '__main__':
     install_cromwell()
     install_cromwell_config()
     add_cromwell_profile()
+    add_and_start_cromwell_service()
     print "Startup script...DONE"
 #-- __main__
