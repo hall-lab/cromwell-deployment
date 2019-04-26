@@ -19,7 +19,6 @@ VERSION=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attri
 # Note also that we still need configuration file.
 # This should be a bucket URL readable by the service account running this instance
 CONFIG=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/cromwell-config -H "Metadata-Flavor: Google")
-
 DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
 
 INSTALL_DIR="/opt/ccdg/cromwell-${VERSION}"
@@ -28,7 +27,15 @@ JAR_DIR="${INSTALL_DIR}/jar"
 CONFIG_DIR="${INSTALL_DIR}/config"
 LCONFIG="${CONFIG_DIR}/jes.conf"
 
+def create_directories():
+    print "Create directories..."
+    if not os.path.exists(INSTALL_DIR): os.makedirs(INSTALL_DIR)
+    if not os.path.exists(BIN_DIR): os.makedirs(BIN_DIR)
+    if not os.path.exists(JAR_DIR): os.makedirs(JAR_DIR)
+    if not os.path.exists(CONFIG_DIR): os.makedirs(CONFIG_DIR)
+
 def install_packages():
+    print "Install pacakges..."
 
     packages = [
         'curl',
@@ -46,6 +53,8 @@ def install_packages():
     while subprocess.call(['apt-get', 'install', '-y'] + packages):
         print "Failed to install packages with apt-get install. Trying again in 5 seconds"
         time.sleep(5)
+
+    print "Install pacakges...DONE"
 
 #-- install_packages
 
@@ -99,6 +108,7 @@ java -version
 java -jar ${JAR_DIR}/cromwell-${VERSION}.jar
 
 if __name__ == '__main__':
+    create_directories()
     install_packages()
     install_cromwell()
     print "Startup script...DONE"
