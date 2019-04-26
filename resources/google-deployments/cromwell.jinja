@@ -1,51 +1,51 @@
 resources:
-  - name: {{ properties['cromwell_server_name'] }}
-    type: compute.v1.instance
-    properties:
-      zone: {{ properties['zone'] }}
-      machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/{{ properties["cromwell_server_machine_type"] }}
-      minCpuPlatform: Intel Skylake
-      address: $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
-      serviceAccounts:
-        - email: {{ properties['service_account_email'] }}
-          scopes:
-            - https://www.googleapis.com/auth/cloud-platform
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
-            diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
-            diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
+- name: {{ properties['cromwell_server_name'] }}
+  type: compute.v1.instance
+  properties:
+    zone: {{ properties['zone'] }}
+    machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/{{ properties["cromwell_server_machine_type"] }}
+    minCpuPlatform: Intel Skylake
+    address: $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
+    serviceAccounts:
+      - email: {{ properties['service_account_email'] }}
+        scopes:
+          - https://www.googleapis.com/auth/cloud-platform
+    disks:
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+          diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
+          diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
 
-  - name: {{ properties['cromwell_server_name'] }}-static-ip
-    type: compute.v1.address
-    properties:
-      ipVersion: IPV4
+- name: {{ properties['cromwell_server_name'] }}-static-ip
+  type: compute.v1.address
+  properties:
+    ipVersion: IPV4
 
-  - name: {{ properties['cromwell_server_name'] }}-cloud-sql
-    type: sqladmin.v1beta4.instance
-    properties:
-      tier: {{ properties['cromwell_cloudsql_instance_type']
-      databaseVersion: MYSQL_5_7
-      storageType: SSD
-      storageSize: {{ properties['cromwell_cloudsql_initial_size'] }}
-      backup: true
-      storageAutoIncrease: true
-      authorizedNetworks:
-        - $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
+- name: {{ properties['cromwell_server_name'] }}-cloud-sql
+  type: sqladmin.v1beta4.instance
+  properties:
+    tier: {{ properties['cromwell_cloudsql_instance_type']
+    databaseVersion: MYSQL_5_7
+    storageType: SSD
+    storageSize: {{ properties['cromwell_cloudsql_initial_size'] }}
+    backup: true
+    storageAutoIncrease: true
+    authorizedNetworks:
+      - $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
 
-  - name: {{ properties['cromwell_server_name'] }}-root-user
-    type: sqladmin.v1beta4.user
-    properties:
-      name: root
-      password: {{ properties['cromwell_cloudsql_password'] }}
-      instance: {{ properties['cromwell_server_name'] }}-cloud-sql
+- name: {{ properties['cromwell_server_name'] }}-root-user
+  type: sqladmin.v1beta4.user
+  properties:
+    name: root
+    password: {{ properties['cromwell_cloudsql_password'] }}
+    instance: {{ properties['cromwell_server_name'] }}-cloud-sql
 
-  - name: {{ properties['cromwell_server_name'] }}-database-table
-    type: sqladmin.v1beta4.database
-    properties:
-      name: {{ properties['cromwell_database_name'] }}
-      instance: {{ properties['cromwell_server_name'] }}-cloud-sql
+- name: {{ properties['cromwell_server_name'] }}-database-table
+  type: sqladmin.v1beta4.database
+  properties:
+    name: {{ properties['cromwell_database_name'] }}
+    instance: {{ properties['cromwell_server_name'] }}-cloud-sql
