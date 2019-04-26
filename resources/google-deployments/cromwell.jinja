@@ -19,6 +19,12 @@ resources:
           sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
           diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
           diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
+    metadata:
+      items:
+        - key: startup-script
+            value: |
+              {{ imports["../../scripts/cromwell-startup-script.py"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"]) }}
+
 
 - name: {{ properties['cromwell_server_name'] }}-static-ip
   type: compute.v1.address
