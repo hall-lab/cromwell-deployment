@@ -78,16 +78,6 @@ def install_cromwell_config():
 
 #-- install_cromwell_config
 
-# Cromwell server start-up wrapper
-# Assumes that you have at least 25G RAM available
-cat > ${BIN_DIR}/cromwell-server <<SCRIPT
-#!/bin/bash
-
-
-MYSQL=PW LOG_MODE=standard java -Xmx40000M -Dconfig.file=${LCONFIG} -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar server 2>&1
-SCRIPT
-chmod a+x ${BIN_DIR}/cromwell-server
-
 def add_cromwell_profile():
     fn = "/etc/profile.d/cromwell.sh"
     print "Installing supernova profile.d script to {}".format(fn)
