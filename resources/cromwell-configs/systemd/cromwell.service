@@ -3,13 +3,15 @@ Description=Cromwell Server
 After=network.target
 
 [Service]
+#MYSQL=\$(gsutil cp ${MYSQL_LOCATION} -) LOG_MODE=standard java -Xmx25000M -Dconfig.file=${LCONFIG} -jar ${JAR_DIR}/cromwell-${VERSION}.jar server 2>&1
 Type=exec
-
 User=root
-WorkingDirectory=/opt/ccdg/cromwell-36.1/
-ExecStart=/bin/bash /opt/ccdg/cromwell-36.1/bin/cromwell-server
+WorkingDirectory=/opt/ccdg/cromwell-@CROMWELL_VERSION@/
+Environment=MYSQL=@CROMWELL_CLOUDSQL_PASSWORD@
+Environment=LOG_MODE=standard
+ExecStart=java -Xmx25000M \ -Dconfig.file=/opt/ccdg/cromwell-@CROMWELL_VERSION@/config/papi.v2.conf \
+  -jar /opt/ccdg/cromwell-@CROMWELL_VERSION@/jar/cromwell-@CROMWELL_VERSION@.jar server
 Restart=always
-
 TimeoutStopSec=10
 RestartSec=5
 
