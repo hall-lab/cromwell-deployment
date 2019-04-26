@@ -88,23 +88,26 @@ MYSQL=PW LOG_MODE=standard java -Xmx40000M -Dconfig.file=${LCONFIG} -jar ${JAR_D
 SCRIPT
 chmod a+x ${BIN_DIR}/cromwell-server
 
+def add_cromwell_profile():
+    fn = "/etc/profile.d/cromwell.sh"
+    print "Installing supernova profile.d script to {}".format(fn)
+    if os.path.exists(fn):
+        print "Already installed cromwell profile.d config...SKIPPING"
+        return
 
-# Include cromwell wrapper in global path for all users
-cat > /etc/profile.d/cromwell.sh <<PATHSETTER
-#!/bin/bash
-
-PATH=${BIN_DIR}:\$PATH
-PATHSETTER
+    with open(fn, "w") as f:
+        f.write('PATH={}:"${{PATH}}"'.format(BIN_DIR) + "\n")
 
 # verify things
 # This will end up in /var/log/syslog or /var/log/daemon.log
-java -version
-java -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar
+#java -version
+#java -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar
 
 if __name__ == '__main__':
     create_directories()
     install_packages()
     install_cromwell()
     install_cromwell_config()
+    add_cromwell_profile()
     print "Startup script...DONE"
 #-- __main__
