@@ -12,6 +12,9 @@ import requests, subprocess
 #     --metadata cromwell-version=34,cromwell-config=gs://some/gcs/path/to/config,mysql-cromwell-password-file=gs://some_bucket/password.txt \
 #     --scopes https://www.googleapis.com/auth/cloud-platform
 
+
+GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
+
 # Do this from instance metadata
 # Make sure to set on instance start up
 VERSION=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/cromwell-version -H "Metadata-Flavor: Google")
@@ -81,8 +84,22 @@ def install_cromwell():
 
 #-- install_cromwell
 
-gsutil cp ${CONFIG} ${LCONFIG}
-perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
+def install_cromwell_config():
+    #gsutil cp ${CONFIG} ${LCONFIG}
+    #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
+    papi_conf_path = os.path.join(CONFIG_DIR, 'papi.conf')
+    if os.path.exists(papi_conf_path):
+        print "Papi/cromwell config already installed at {}".format(papi_conf_path)
+        return
+
+    print "Install papi/cromwell config to {}".format(papi_conf_path)
+    url = "/".join([GOOGLE_URL, 'papi_conf'])
+    response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
+    if not response.ok: raise Exception("GET failed for {}".format(url))
+    with open(papi_conf_path, 'w') as f:
+        f.write(response.content)
+
+#-- install_cromwell_config
 
 # Cromwell server start-up wrapper
 # Assumes that you have at least 25G RAM available
@@ -111,5 +128,6 @@ if __name__ == '__main__':
     create_directories()
     install_packages()
     install_cromwell()
+    install_cromwell_config()
     print "Startup script...DONE"
 #-- __main__
