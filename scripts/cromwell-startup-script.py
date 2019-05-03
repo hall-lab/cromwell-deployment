@@ -82,9 +82,9 @@ def add_cromwell_profile():
 def add_and_start_cromwell_service():
     _fetch_and_install_from_metadata(name='cromwell-service', fn=os.path.join('etc', 'systemd', 'system', 'cromwell.service'))
     print "Start cromwell service..."
-    systemctl daemon-reload
-    systemctl start cromwell-server
-    journalctl -u cromwell-server
+    subprocess.call(['systemctl', 'daemon-reload']):
+    subprocess.call(['systemctl', 'start', 'cromwell-server']):
+    subprocess.call(['journalctl', '-u', 'cromwell-server' ]):
 
 #-- add_cromwell_service
 
