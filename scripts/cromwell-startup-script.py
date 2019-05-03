@@ -5,7 +5,6 @@ INSTALL_DIR = os.path.join('opt', 'ccdg', 'cromwell-@CROMWELL_VERSION@')
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
 CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
-PAPI_CONFIG = os.path.join(CONFIG_DIR}, "papi.v2.conf")
 GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
 
 def create_directories():
@@ -64,7 +63,7 @@ def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-    _fetch_and_install_from_metadata(name='papi_conf', fn=os.path.join(CONFIG_DIR, 'papi.conf'))
+    _fetch_and_install_from_metadata(name='papi-v2-conf', fn=os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
 
 #-- install_cromwell_config
 
@@ -81,7 +80,7 @@ def add_cromwell_profile():
 #-- add_cromwell_profile
 
 def add_and_start_cromwell_service():
-    _fetch_and_install_from_metadata(name='cromwell_service', fn=os.path.join('etc', 'systemd', 'system', 'cromwell.service'))
+    _fetch_and_install_from_metadata(name='cromwell-service', fn=os.path.join('etc', 'systemd', 'system', 'cromwell.service'))
     print "Start cromwell service..."
     systemctl daemon-reload
     systemctl start cromwell-server

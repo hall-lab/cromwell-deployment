@@ -27,6 +27,9 @@ resources:
         - key: cromwell-service
             value: |
               {{ imports["../cromwell-configs/systemd/cromwell.service"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"]) }}
+        - key: papi-v2-conf
+            value: |
+              {{ imports["../cromwell-configs/systemd/cromwell.service"]|indent(12)|replace("@CROMWELL_CLOUDSQL_SERVER@",$(ref.{{ properties['cromwell_server_name'] }}-cloud-sql.externalAddress))|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"]) }}
 
 - name: {{ properties['cromwell_server_name'] }}-static-ip
   type: compute.v1.address
