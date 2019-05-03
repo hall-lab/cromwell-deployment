@@ -1,5 +1,6 @@
 import os, requests, subprocess
 
+CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
 INSTALL_DIR = os.path.join('opt', 'ccdg', 'cromwell-@CROMWELL_VERSION@')
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
@@ -101,7 +102,12 @@ def _fetch_and_install_from_metadata(name, fn):
 
 #-- _fetch_and_install_from_metadata
 
-# verify things
+def create_cromwell_schema():
+    subprocess.call(['MYSQL_PWD=' + CROMWELL_CLOUDSQL_PASSWORD, 'mysql', '-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;']):
+
+#-- create_cromwell_schema
+
+# FIXME needed? verify things
 # This will end up in /var/log/syslog or /var/log/daemon.log
 #java -version
 #java -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar
@@ -113,5 +119,6 @@ if __name__ == '__main__':
     install_cromwell_config()
     add_cromwell_profile()
     add_and_start_cromwell_service()
+    create_cromwell_schema()
     print "Startup script...DONE"
 #-- __main__
