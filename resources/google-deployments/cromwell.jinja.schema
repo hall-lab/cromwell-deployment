@@ -11,8 +11,8 @@ imports:
 
 required:
 - cromwell_cloudsql_password
-- cromwell_server_name
 - cromwell_version
+- region
 - service_account_email
 - zone
 
@@ -46,13 +46,13 @@ properties:
       type: string
       default: n1-standard-8
 
-    cromwell_server_name:
-      description: Name of the VM instance to run the cromwell server. Will also be used to derive names for other resources.
-      type: string
-
     cromwell_version:
       description: Version of cromwell to use.
+      type: number
+
+    region:
       type: string
+      description: Region to run cromwell server and cloudsql instances in. Ensure the data being used is in buckets in the same region, or in multi-regional buckets.
 
     service_account_email:
       description: Service account for the cromwell server to use.
