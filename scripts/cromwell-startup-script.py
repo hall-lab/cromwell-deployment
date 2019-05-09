@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+
 import os, requests, subprocess
 
 CROMWELL_CLOUDSQL_SERVER='@CROMWELL_CLOUDSQL_SERVER@'
 CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
-INSTALL_DIR = os.path.join('opt', 'ccdg', 'cromwell-@CROMWELL_VERSION@')
+INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'ccdg', 'cromwell-' + CROMWELL_VERSION)
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
 CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
@@ -23,6 +25,7 @@ def install_packages():
         'curl',
 	'default-jdk',
 	'default-mysql-client-core',
+        'less',
 	'vim',
         ]
 
@@ -47,15 +50,16 @@ def install_cromwell():
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
         jar_basename = name + "-" + CROMWELL_VERSION + "." + "jar"
-        if os.path.exists( os.path.join(JAR_DIR, jar_basename) ):
+        jar_fn = os.path.join(JAR_DIR, jar_basename)
+        if os.path.exists(jar_fn):
             print "{} already installed...SKIPPING".format(jar_basename)
             continue
         url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", CROMWELL_VERSION, jar_basename])
         print "Intalling {} from {}".format(jar_basename, url)
         response = requests.get(url)
         if not response.ok: raise Exception("GET failed for {}".format(url))
-        with open(jar_basename, "wb") as f:
-            f.write(r.content)
+        with open(jar_fn, "wb") as f:
+            f.write(response.content)
 
     print "Install cromwell...DONE"
 
@@ -70,7 +74,7 @@ def install_cromwell_config():
 #-- install_cromwell_config
 
 def add_cromwell_profile():
-    fn = "/etc/profile.d/cromwell.sh"
+    fn = os.path.join(os.path.sep, 'etc', 'profile.d', 'cromwell.sh')
     print "Installing supernova profile.d script to {}".format(fn)
     if os.path.exists(fn):
         print "Already installed cromwell profile.d config...SKIPPING"
@@ -82,11 +86,11 @@ def add_cromwell_profile():
 #-- add_cromwell_profile
 
 def add_and_start_cromwell_service():
-    _fetch_and_install_from_metadata(name='cromwell-service', fn=os.path.join('etc', 'systemd', 'system', 'cromwell.service'))
+    _fetch_and_install_from_metadata(name='cromwell-service', fn=os.path.join(os.path.sep, 'etc', 'systemd', 'system', 'cromwell.service'))
     print "Start cromwell service..."
-    subprocess.call(['systemctl', 'daemon-reload']):
-    subprocess.call(['systemctl', 'start', 'cromwell-server']):
-    subprocess.call(['journalctl', '-u', 'cromwell-server' ]):
+    subprocess.call(['systemctl', 'daemon-reload'])
+    subprocess.call(['systemctl', 'start', 'cromwell-server'])
+    subprocess.call(['journalctl', '-u', 'cromwell-server' ])
 
 #-- add_cromwell_service
 
@@ -103,8 +107,8 @@ def _fetch_and_install_from_metadata(name, fn):
 
 #-- _fetch_and_install_from_metadata
 
-def create_cromwell_schema():
-    subprocess.call(['MYSQL_PWD=' + CROMWELL_CLOUDSQL_PASSWORD, 'mysql', '-h', CROMWELL_CLOUDSQL_SERVER, '-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;']):
+#def create_cromwell_schema():
+#    subprocess.call(['MYSQL_PWD=' + CROMWELL_CLOUDSQL_PASSWORD, 'mysql', '-h', CROMWELL_CLOUDSQL_SERVER, '-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;'])
 
 #-- create_cromwell_schema
 
@@ -120,6 +124,6 @@ if __name__ == '__main__':
     install_cromwell_config()
     add_cromwell_profile()
     add_and_start_cromwell_service()
-    create_cromwell_schema()
+    #create_cromwell_schema()
     print "Startup script...DONE"
 #-- __main__
