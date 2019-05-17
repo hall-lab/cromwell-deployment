@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import os, requests, subprocess
+import os, requests, subprocess, sys
 
-CROMWELL_CLOUDSQL_SERVER='@CROMWELL_CLOUDSQL_SERVER@'
 CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
 INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'ccdg', 'cromwell-' + CROMWELL_VERSION)
@@ -69,7 +68,7 @@ def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-    _fetch_and_install_from_metadata(name='papi-v2-conf', fn=os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
+    _fetch_and_save_instance_info(name='papi-v2-conf', fn=os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
 
 #-- install_cromwell_config
 
@@ -86,7 +85,7 @@ def add_cromwell_profile():
 #-- add_cromwell_profile
 
 def add_and_start_cromwell_service():
-    _fetch_and_install_from_metadata(name='cromwell-service', fn=os.path.join(os.path.sep, 'etc', 'systemd', 'system', 'cromwell.service'))
+    _fetch_and_save_instance_info(name='cromwell-service', fn=os.path.join(os.path.sep, 'etc', 'systemd', 'system', 'cromwell.service'))
     print "Start cromwell service..."
     subprocess.call(['systemctl', 'daemon-reload'])
     subprocess.call(['systemctl', 'start', 'cromwell-server'])
@@ -94,28 +93,41 @@ def add_and_start_cromwell_service():
 
 #-- add_cromwell_service
 
-def _fetch_and_install_from_metadata(name, fn):
+def _fetch_and_save_instance_info(name, fn):
     if os.path.exists(fn):
-        print "Already installed {} to {} ... SKIPPING".format(name, fn)
+        print "Already installed {} to {} ... SKIPPING".format('/'.join(name), fn)
         return
-    print "Install {} to {}".format(name, fn)
+    print "Install {} ...".format(fn)
+    content = _fetch_instance_info(name)
+    with open(fn, 'w') as f:
+        f.write(content)
+
+#-- _fetch_and_save_instance_info
+
+def _fetch_instance_info(name):
     url = "/".join([GOOGLE_URL, name])
     response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
     if not response.ok: raise Exception("GET failed for {}".format(url))
-    with open(fn, 'w') as f:
-        f.write(response.content)
+    return response.content
 
-#-- _fetch_and_install_from_metadata
+#-- _fetch_instance_info
 
-#def create_cromwell_schema():
-#    subprocess.call(['MYSQL_PWD=' + CROMWELL_CLOUDSQL_PASSWORD, 'mysql', '-h', CROMWELL_CLOUDSQL_SERVER, '-u', 'root', '-p', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;'])
+def configure_cromwell_database():
+    sys.stderr.write("Configure cromwell database...\n")
 
-#-- create_cromwell_schema
+    cloudsql_name = _fetch_instance_info('cloudsql-name')
+    sys.stderr.write("Updating root password...\n")
+    rv = subprocess.call(["gcloud", "sql", "users", "set-password", "root", "--instance", cloudsql_name, "--password", CROMWELL_CLOUDSQL_PASSWORD, "--host", "%"])
+    if rv != 0: raise Exception("Failed to update mysql root user password!")
 
-# FIXME needed? verify things
-# This will end up in /var/log/syslog or /var/log/daemon.log
-#java -version
-#java -jar ${JAR_DIR}/cromwell-CROMWELL_VERSION.jar
+    cloudsql_ip = _fetch_instance_info('cloudsql-ip')
+    sys.stderr.write("Creating cromwell database...\n")
+    lenv = os.environ.copy()
+    lenv['MYSQL_PWD'] = CROMWELL_CLOUDSQL_PASSWORD
+    rv = subprocess.call(['mysql', '-h', cloudsql_ip, '-u', 'root', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;'], env=lenv)
+    if rv != 0: raise Exception("Failed to create the mysql cromwell database")
+
+#-- configure_cromwell_database
 
 if __name__ == '__main__':
     create_directories()
@@ -124,6 +136,7 @@ if __name__ == '__main__':
     install_cromwell_config()
     add_cromwell_profile()
     add_and_start_cromwell_service()
-    #create_cromwell_schema()
+    configure_cromwell_database()
     print "Startup script...DONE"
+
 #-- __main__
