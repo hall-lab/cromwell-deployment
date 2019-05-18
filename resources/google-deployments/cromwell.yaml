@@ -12,7 +12,7 @@ resources:
       service_account_email:           hall-lab-cromwell-executor@washu-genome-inh-dis-analysis.iam.gserviceaccount.com
       cromwell_version:                39
       #cromwell_server_machine_type:    n1-standard-8
-      #cromwell_server_boot_disk_size:  200
+      #cromwell_server_boot_disk_size:  10
 
       #cromwell_cloudsql_instance_type: db-n1-standard-8
       #cromwell_cloudsql_initial_size:  1000
