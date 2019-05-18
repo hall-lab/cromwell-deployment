@@ -68,7 +68,15 @@ def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-    _fetch_and_save_instance_info(name='papi-v2-conf', fn=os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
+    fn = os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
+    if os.path.exists(fn):
+        print "Already installed cromwell profile.d config...SKIPPING"
+    sys.stderr.write("Install cromwell PAPI v2 config...")
+    papi_template = _fetch_instance_info(name='papi-v2-conf')
+    ip = _fetch_instance_info(name='cloudsql-ip')
+    params = { "ip": ip, "password": CROMWELL_CLOUDSQL_PASSWORD }
+    with open(fn, 'w') as f:
+        f.write( papi_template.render(cloudsql=params) )
 
 #-- install_cromwell_config
 
