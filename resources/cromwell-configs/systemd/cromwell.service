@@ -11,7 +11,6 @@ RestartSec=5
 WorkingDirectory=/opt/ccdg/cromwell-@CROMWELL_VERSION@
 Environment=MYSQL=@CROMWELL_CLOUDSQL_PASSWORD@
 Environment=LOG_MODE=standard
-ExecStart=/usr/bin/java -Xmx25000M -Dconfig.file=/opt/ccdg/cromwell-39/config/PAPI.v2.conf -jar /opt/ccdg/cromwell-39/jar/cromwell-39.jar server
 ExecStart=/usr/bin/java -Xmx25000M -Dconfig.file=/opt/ccdg/cromwell-@CROMWELL_VERSION@/config/PAPI.v2.conf -jar /opt/ccdg/cromwell-@CROMWELL_VERSION@/jar/cromwell-@CROMWELL_VERSION@.jar server
 
 [Install]

@@ -24,6 +24,7 @@ def install_packages():
         'curl',
 	'default-jdk',
 	'default-mysql-client-core',
+        'python-pip',
         'less',
 	'vim',
         ]
@@ -32,11 +33,11 @@ def install_packages():
         print "Failed to apt-get update. Trying again in 5 seconds"
         time.sleep(5)
 
-    # FIXME needed? apt-get dist-upgrade -y
-
     while subprocess.call(['apt-get', 'install', '-y'] + packages):
         print "Failed to install packages with apt-get install. Trying again in 5 seconds"
         time.sleep(5)
+
+    subprocess.check_call(['pip', 'install', 'jinja2'])
 
     print "Install pacakges...DONE"
 
@@ -68,11 +69,12 @@ def install_cromwell_config():
     #gsutil cp ${CONFIG} ${LCONFIG}
     #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
-    fn = os.path.join(CONFIG_DIR, 'PAPI.v2.conf'))
+    fn = os.path.join(CONFIG_DIR, 'PAPI.v2.conf')
     if os.path.exists(fn):
         print "Already installed cromwell profile.d config...SKIPPING"
     sys.stderr.write("Install cromwell PAPI v2 config...")
-    papi_template = _fetch_instance_info(name='papi-v2-conf')
+    from jinja2 import Template
+    papi_template = Template( _fetch_instance_info(name='papi-v2-conf') )
     ip = _fetch_instance_info(name='cloudsql-ip')
     params = { "ip": ip, "password": CROMWELL_CLOUDSQL_PASSWORD }
     with open(fn, 'w') as f:
@@ -95,15 +97,14 @@ def add_cromwell_profile():
 def add_and_start_cromwell_service():
     _fetch_and_save_instance_info(name='cromwell-service', fn=os.path.join(os.path.sep, 'etc', 'systemd', 'system', 'cromwell.service'))
     print "Start cromwell service..."
-    subprocess.call(['systemctl', 'daemon-reload'])
-    subprocess.call(['systemctl', 'start', 'cromwell-server'])
-    subprocess.call(['journalctl', '-u', 'cromwell-server' ])
+    subprocess.check_call(['systemctl', 'daemon-reload'])
+    subprocess.check_call(['systemctl', 'start', 'cromwell'])
 
 #-- add_cromwell_service
 
 def _fetch_and_save_instance_info(name, fn):
     if os.path.exists(fn):
-        print "Already installed {} to {} ... SKIPPING".format('/'.join(name), fn)
+        print "Already installed {} to {} ... SKIPPING".format(name, fn)
         return
     print "Install {} ...".format(fn)
     content = _fetch_instance_info(name)
