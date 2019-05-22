@@ -16,7 +16,7 @@ Update these properties need to be set in the YAML (*resources/google-deployment
 ### Required Properties
 | Property | Notes |
 | --- | --- |
-| service_account | service account email to have authorized on the supernova VM |
+| service_account | service account email to have authorized on the cromwell VM |
 | region & zone | area to run instances, should match data location region/zone |
 | cromwell_version | cromwell to use |
 | cromwell_cloudsql_password | mysql root db password to use | 
