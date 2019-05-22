@@ -37,6 +37,7 @@ Update these properties need to be set in the YAML (`resources/google-deployment
 | cromwell_cloudsql_initial_size | cloud sql disk size (1000 GB) |
 
 ## Edit the _PAPI.v2.conf_ [OPTIONAl]
+
 Optionally, edit the `resources/cromwell-configs/PAPI.v2.conf` file to adjust the any of the cromwell server configuration. Do not edit the *DB* section, as it is populated with the CLoud SQL IP and root user password.
 
 ## Create the Deployment
@@ -55,7 +56,9 @@ cromwell1-static-ip  compute.v1.address         COMPLETED  []
 ```
 
 ### Assests Created
+
 This is list of assets created in the deployment. All assests are preppended with the deployment name and a '-'.
+
 | Assest | Name | Purpose |
 | --- | --- | --- |
 | static IP | *-static-ip* | An IP for the crowmell server to only allow DB connections to the cloud SQL instance. |
@@ -81,10 +84,9 @@ you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 {"cromwell":"39"}
 ```
 
-
 # Delete a Deployment
 
 ```sh
-gcloud deployment-manager delete cromwell1
+$ gcloud deployment-manager delete cromwell1
 ```
 
