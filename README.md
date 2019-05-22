@@ -70,3 +70,10 @@ you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 {"cromwell":"39"}
 ```
 
+
+# Delete a Deployment
+
+```sh
+gcloud deployment-manager delete cromwell1
+```
+
