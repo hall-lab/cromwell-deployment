@@ -41,7 +41,7 @@ Update these properties need to be set in the YAML (`resources/google-deployment
 In an authenticated Google Cloud session, enter the `resources/google-deployments` directory. Run the command below to create the deployment named _cromwell1_. The deployemnt name will be prepended to all assoiciated assets.
 
 ```
-$ gcloud deployment manager deployments create cromwell1 --config cromwell.yaml
+$ gcloud deployment-manager deployments create cromwell1 --config cromwell.yaml
 The fingerprint of the deployment is nBuQdHhB0JYSE85Y0hkzjQ==
 Waiting for create [operation-1558469542478-5896b777900d3-3b747d21-13cf4243]...done.                              
 Create operation operation-1558469542478-5896b777900d3-3b747d21-13cf4243 completed successfully.
