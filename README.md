@@ -7,13 +7,19 @@ _(Documentation still in progress)_
 [0]: https://github.com/broadinstitute/cromwell
 [1]: https://cloud.google.com
 
-# Configuring the Cromwell Deployment for Google Cloud
+# Getting Started
 
-## Edit the Cromwell YAML Configuration File
+    git clone https://github.com/hall-lab/cromwell-deployment
+    cd cromwell-deployment
 
-Update these properties need to be set in the YAML (*resources/google-deployments/cromwell.yaml*) configuration. Check _cromwell.jinja.schema_ for indivdual properties documentation.
+# Setup the Configuration Files
+
+## Edit `cromwell.yaml`
+
+Update these properties need to be set in the YAML (`resources/google-deployments/cromwell.yaml`) configuration. Check `cromwell.jinja.schema` for indivdual properties documentation.
 
 ### Required Properties
+
 | Property | Notes |
 | --- | --- |
 | service_account | service account email to have authorized on the cromwell VM |
@@ -22,6 +28,7 @@ Update these properties need to be set in the YAML (*resources/google-deployment
 | cromwell_cloudsql_password | mysql root db password to use | 
 
 ### Optional Properties
+
 | Property | Notes (Default) |
 | --- | --- |
 | cromwell_server_machine_type |  cromwell server VM type (n1-standard-8) |
@@ -29,10 +36,16 @@ Update these properties need to be set in the YAML (*resources/google-deployment
 | cromwell_cloudsql_instance_type | cloud sql instance type (db-n1-standard-8) |
 | cromwell_cloudsql_initial_size | cloud sql disk size (1000 GB) |
 
+## Edit the _PAPI.v2.conf_ [OPTIONAl]
+
+Optionally, edit the `resources/cromwell-configs/PAPI.v2.conf` file to adjust the any of the cromwell server configuration. Do not edit the *DB* section, as it is populated with the CLoud SQL IP and root user password.
+
 ## Create the Deployment
-In an authenticated Google Cloud session, enter the _resources/google-deployments_ directory. Run the command below to create the deployment named _cromwell1_. The deployemnt name will be prepended to all assoiciated assets.
+
+In an authenticated Google Cloud session, enter the `resources/google-deployments` directory. Run the command below to create the deployment named _cromwell1_. The deployemnt name will be prepended to all assoiciated assets.
+
 ```
-$ gcloud deploymewnt manager deployments create cromwell1 --config cromwell.yaml
+$ gcloud deployment-manager deployments create cromwell1 --config cromwell.yaml
 The fingerprint of the deployment is nBuQdHhB0JYSE85Y0hkzjQ==
 Waiting for create [operation-1558469542478-5896b777900d3-3b747d21-13cf4243]...done.                              
 Create operation operation-1558469542478-5896b777900d3-3b747d21-13cf4243 completed successfully.
@@ -41,16 +54,39 @@ cromwell1-cloudsql   sqladmin.v1beta4.instance  COMPLETED  []
 cromwell1-cromwell   compute.v1.instance        COMPLETED  []
 cromwell1-static-ip  compute.v1.address         COMPLETED  []
 ```
-## Confirm Deployment and Cromwell is Running
-SSH into the _cromwell1-cromwell_ VM.
+
+### Assests Created
+
+This is list of assets created in the deployment. All assests are preppended with the deployment name and a '-'.
+
+| Assest | Name | Purpose |
+| --- | --- | --- |
+| static IP | *-static-ip* | An IP for the crowmell server to only allow DB connections to the cloud SQL instance. |
+| cromwell server VM | *-cromwell* | The cromwell server. Start workflows, and querythe SQL DB from here. |
+| cloud sql | *-cloudsql* | SQL database VM adn Server. |
+
+## Verify the `cromwell` deployment
+
+### SSH into the server VM.
+
+In the default parameter case it is: `cromwell1-cromwell`.
+
 ```
 $ gcloud ssh cromwell1-cromwell
 ```
-Verify Cromwell is Running
+
+### Verify the server 
+
 ```
 you@cromwell1-cromwell:~$ ps aux | grep java
 root     14565 45.1  1.8 32349732 583008 ?     Ssl  20:16   0:29 /usr/bin/java -Xmx25000M -Dconfig.file=/opt/ccdg/cromwell-39/config/PAPI.v2.conf -jar /opt/ccdg/cromwell-39/jar/cromwell-39.jar server
 you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 {"cromwell":"39"}
+```
+
+# Delete a Deployment
+
+```sh
+$ gcloud deployment-manager delete cromwell1
 ```
 
