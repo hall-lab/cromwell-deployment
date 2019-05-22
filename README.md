@@ -13,7 +13,7 @@ _(Documentation still in progress)_
 
 Update these properties need to be set in the YAML (*resources/google-deployments/cromwell.yaml*) configuration. Check _cromwell.jinja.schema_ for indivdual properties documentation.
 
-### Required Cromwell Properties
+### Required Properties
 | Property | Notes |
 | --- | --- |
 | service_account | service account email to have authorized on the supernova VM |
@@ -21,16 +21,16 @@ Update these properties need to be set in the YAML (*resources/google-deployment
 | cromwell_version | cromwell to use |
 | cromwell_cloudsql_password | mysql root db password to use | 
 
-### Optional Supernova Properties
-
-FIXME OPTS
-| Property | Notes |
+### Optional Properties
+| Property | Notes (Default) |
 | --- | --- |
-| cromwell_server_machine_type | |
+| cromwell_server_machine_type |  cromwell server VM type (n1-standard-8) |
+| cromwell_server_boot_disk_size | cromwesll server VM boot disk size (10 GB) |
+| cromwell_cloudsql_instance_type | cloud sql instance type (db-n1-standard-8) |
+| cromwell_cloudsql_initial_size | cloud sql disk size (1000 GB) |
 
 ## Create the Deployment
-
-In an authenticated Google Cloud session, enter the _resources/google-deployments_ directory. Run the command below to create the deployment named _supernova1_. The deployemnt name will be prepended to all assoiciated assets.
+In an authenticated Google Cloud session, enter the _resources/google-deployments_ directory. Run the command below to create the deployment named _cromwell1_. The deployemnt name will be prepended to all assoiciated assets.
 ```
 $ gcloud deploymewnt manager deployments create cromwell1 --config cromwell.yaml
 The fingerprint of the deployment is nBuQdHhB0JYSE85Y0hkzjQ==
@@ -41,12 +41,16 @@ cromwell1-cloudsql   sqladmin.v1beta4.instance  COMPLETED  []
 cromwell1-cromwell   compute.v1.instance        COMPLETED  []
 cromwell1-static-ip  compute.v1.address         COMPLETED  []
 ```
-## Confirm Deployment and Start a Cromwell Workflow
+## Confirm Deployment and Cromwell is Running
 SSH into the _cromwell1-cromwell_ VM.
 ```
 $ gcloud ssh cromwell1-cromwell
 ```
-FIXME DOC
+Verify Cromwell is Running
 ```
-[you@cromwell1-cromwell ~]$ 
+you@cromwell1-cromwell:~$ ps aux | grep java
+root     14565 45.1  1.8 32349732 583008 ?     Ssl  20:16   0:29 /usr/bin/java -Xmx25000M -Dconfig.file=/opt/ccdg/cromwell-39/config/PAPI.v2.conf -jar /opt/ccdg/cromwell-39/jar/cromwell-39.jar server
+you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
+{"cromwell":"39"}
 ```
+
