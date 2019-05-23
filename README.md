@@ -89,6 +89,13 @@ you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 journalctl -u cromwell
 ```
 
+### Mess with the config
+
+```
+sudo vim /opt/ccdg/cromwell*/config/PAPI.v2.conf
+sudo service cromwell restart
+```
+
 # Delete a Deployment
 
 ```sh
