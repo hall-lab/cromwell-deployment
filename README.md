@@ -83,6 +83,11 @@ root     14565 45.1  1.8 32349732 583008 ?     Ssl  20:16   0:29 /usr/bin/java -
 you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 {"cromwell":"39"}
 ```
+### Check the logs
+
+```
+journalctl -u cromwell
+```
 
 # Delete a Deployment
 
