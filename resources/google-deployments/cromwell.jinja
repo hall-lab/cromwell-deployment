@@ -1,9 +1,36 @@
 
+{% set networkName = env['deployment'] + '-net' %}
+{% set subNetworkName = env['deployment'] + '-subnet' %}
 {% set staticIpName = env['deployment'] + '-static-ip' %}
 {% set cromwellServerName = env['deployment'] + '-cromwell' %}
 {% set cloudsqlName = env['deployment'] + '-cloudsql' %}
 
 resources:
+
+- name: {{ networkName }}
+  type: compute.v1.network
+  properties:
+    autoCreateSubnetworks: false
+- name: {{ subNetworkName }}
+  type: compute.v1.subnetwork
+  properties:
+    network: $(ref.{{ networkName }}.selfLink)
+    ipCidrRange: 10.10.0.0/16
+    region: {{ properties["region"] }}
+
+{% if properties['ssh_source_ranges'] %}
+- name: {{ networkName }}-ssh-restricted
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.{{ networkName }}.selfLink)
+    sourceRanges: {{ properties['ssh_source_ranges'] }}
+    targetTags: ["cromwell-ssh-restricted"]
+    priority: 1000
+    allowed:
+    - IPProtocol: TCP
+      ports: ["22"]
+    - IPProtocol: ICMP
+{% endif %}
 
 - name: {{ staticIpName }}
   type: compute.v1.address
@@ -49,7 +76,7 @@ resources:
           - https://www.googleapis.com/auth/cloud-platform
     tags:
       items:
-        - mgi-accessible
+        - cromwell-ssh-restricted
     labels:
       user: ebelter
       pipeline: cromwell-gatk4
@@ -64,7 +91,7 @@ resources:
           diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
           diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
     networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/washu-genome-inh-dis-analysis/global/networks/default
+    - subnetwork: $(ref.{{ subNetworkName }}.selfLink)
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT

@@ -58,6 +58,10 @@ properties:
       description: Service account for the cromwell server to use.
       type: string
 
+    ssh_source_ranges:
+      type        : array
+      description : Restrict cromwell compute instance access to a whitelist of IP addresses via a firewall. No firewall is created if no IPs are given.
+
     zone:
       type: string
       description: Zone to run cromwell server and cloudsql instances in. Ensure the data being used is in buckets in the same region, or in multi-regional buckets.
