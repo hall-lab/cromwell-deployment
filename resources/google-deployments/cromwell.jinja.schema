@@ -50,6 +50,10 @@ properties:
       description: Version of cromwell to use.
       type: number
 
+    labels:
+      description: Labels to apply to the compute and cloud sql instances.
+      type: dict
+
     region:
       type: string
       description: Region to run cromwell server and cloudsql instances in. Ensure the data being used is in buckets in the same region, or in multi-regional buckets.

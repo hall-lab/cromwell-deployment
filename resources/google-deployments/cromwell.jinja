@@ -45,6 +45,12 @@ resources:
     instanceType: CLOUD_SQL_INSTANCE
     databaseVersion: MYSQL_5_7
     region: {{ properties['region'] }}
+    {% if properties.get('labels', None): %}
+    labels:
+    {%   for k, v in properties['labels'].items(): %}
+      {{ "{}: {}".format(k, v) }}
+    {%   endfor %}
+    {% endif %}
     settings:
       tier: {{ properties['cromwell_cloudsql_instance_type'] }}
       dataDiskSizeGb: {{ properties['cromwell_cloudsql_initial_size'] }}
@@ -77,10 +83,12 @@ resources:
     tags:
       items:
         - cromwell-ssh-restricted
+    {% if properties.get('labels', None): %}
     labels:
-      user: ebelter
-      pipeline: cromwell-gatk4
-      project: test
+    {%   for k, v in properties['labels'].items(): %}
+      {{ "{}: {}".format(k, v) }}
+    {%   endfor %}
+    {% endif %}
     disks:
       - deviceName: boot
         type: PERSISTENT

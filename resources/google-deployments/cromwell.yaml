@@ -19,4 +19,9 @@ resources:
       #cromwell_cloudsql_initial_size:  1000
       #cromwell_database_name:          cromwell
       cromwell_cloudsql_password:      <PASSWORD>
+
+      labels:
+        user:    <USER>
+        project: <PROJECT>
+        pipline: <PIPELINE>
 # [END cromwell_yaml]
