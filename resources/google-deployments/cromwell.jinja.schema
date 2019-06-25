@@ -5,7 +5,7 @@ info:
     A template for creating a cromwell server and corresponding cloudsql instance
 
 imports:
-- path: ../../scripts/cromwell-startup-script.py
+- path: ../startup-scripts/cromwell.py
 - path: ../cromwell-configs/PAPI.v2.conf
 - path: ../cromwell-configs/systemd/cromwell.service
 
