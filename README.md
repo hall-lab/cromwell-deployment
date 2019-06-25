@@ -1,20 +1,13 @@
 # Cromwell Deployer (`cromployer`)
 
-This repository contains scripts and resources to deploy a [cromwell][0] server and database. Currently implemented for Google CLoud.
+This repository contains scripts and resources to deploy a [cromwell][0] server and database. Currently implemented for Google Cloud.
 
-_(Documentation still in progress)_
+_(This project is in active development, and may change!)_
 
 [0]: https://github.com/broadinstitute/cromwell
 [1]: https://cloud.google.com
 
-# Getting Started
-
-    git clone https://github.com/hall-lab/cromwell-deployment
-    cd cromwell-deployment
-
-# Cloud Setup
-
-## Service Account
+## Google Cloud Service Account
 
 A service account is required to run cromwell infrastructure. It is recommended to use a custom one for running these services instead of using the "default" one. The service account will need these roles assigned to it:
 
