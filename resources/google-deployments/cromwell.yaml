@@ -21,7 +21,7 @@ resources:
       cromwell_cloudsql_password:      <PASSWORD>
 
       labels:
-        user:    <USER>
-        project: <PROJECT>
-        pipline: <PIPELINE>
+        user:     <USER>
+        project:  <PROJECT>
+        pipeline: <PIPELINE>
 # [END cromwell_yaml]
