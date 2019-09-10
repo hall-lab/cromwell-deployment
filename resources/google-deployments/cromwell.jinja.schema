@@ -52,7 +52,7 @@ properties:
 
     labels:
       description: Labels to apply to the compute and cloud sql instances.
-      type: dict
+      type: object
 
     region:
       type: string
