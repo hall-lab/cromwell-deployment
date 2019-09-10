@@ -22,11 +22,11 @@ def install_packages():
 
     packages = [
         'curl',
-	'default-jdk',
-	'default-mysql-client-core',
+        'default-jdk',
+        'default-mysql-client-core',
         'python-pip',
         'less',
-	'vim',
+        'vim',
         ]
 
     while subprocess.call(['apt-get', 'update']):
