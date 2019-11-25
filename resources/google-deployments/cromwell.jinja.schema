@@ -4,37 +4,21 @@ info:
   description: |
     A template for creating a cromwell server and corresponding cloudsql instance
 
-  required:
-    - cromwell_server_name
-    - cromwell_cloudsql_password
-    - service_account_email
+imports:
+- path: ../startup-scripts/cromwell.py
+- path: ../cromwell-configs/PAPI.v2.conf
+- path: ../cromwell-configs/systemd/cromwell.service
+
+required:
+- cromwell_cloudsql_password
+- cromwell_version
+- region
+- service_account_email
+- zone
 
 properties:
-    cromwell_server_name:
-      type: string
-      description: Name of the VM instance to run the cromwell server. Will also be used to derive names for other resources.
-
-    zone:
-      type: string
-      description: Zone to run instances in.
-      default: us-central1-1
-
-    cromwell_server_machine_type:
-      type: string
-      description: Machine type for the cromwell server.
-      default: n1-standard-8
-
-    service_account_email:
-      type: string
-      description: Service account for the cromwell server to use.
-
-    cromwell_server_boot_disk_size:
-      description: Size in GB of the cromwell server boot disk
-      type: integer
-      default: 200
-
     cromwell_cloudsql_instance_type:
-      description: Instance type for the cloudsql instance.
+      description: Type for the cloudsql instance.
       type: string
       default: db-n1-standard-8
 
@@ -44,15 +28,44 @@ properties:
       default: 1000
 
     cromwell_cloudsql_password:
+      description: Password for mysql root user.
       type: string
 
-      description: Password for mysql root user.
     cromwell_database_name:
       description: Name of MySQL database to create in the CloudSQL instance.
       type: string
       default: cromwell
 
+    cromwell_server_boot_disk_size:
+      description: Size in GB of the cromwell server boot disk.
+      type: integer
+      default: 10
 
+    cromwell_server_machine_type:
+      description: Machine type for the cromwell server.
+      type: string
+      default: n1-standard-8
 
+    cromwell_version:
+      description: Version of cromwell to use.
+      type: number
 
+    labels:
+      description: Labels to apply to the compute and cloud sql instances.
+      type: object
 
+    region:
+      type: string
+      description: Region to run cromwell server and cloudsql instances in. Ensure the data being used is in buckets in the same region, or in multi-regional buckets.
+
+    service_account_email:
+      description: Service account for the cromwell server to use.
+      type: string
+
+    ssh_source_ranges:
+      type        : array
+      description : Restrict cromwell compute instance access to a whitelist of IP addresses via a firewall. No firewall is created if no IPs are given.
+
+    zone:
+      type: string
+      description: Zone to run cromwell server and cloudsql instances in. Ensure the data being used is in buckets in the same region, or in multi-regional buckets.

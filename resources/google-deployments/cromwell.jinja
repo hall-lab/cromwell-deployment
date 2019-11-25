@@ -1,51 +1,123 @@
+
+{% set networkName = env['deployment'] + '-net' %}
+{% set subNetworkName = env['deployment'] + '-subnet' %}
+{% set staticIpName = env['deployment'] + '-static-ip' %}
+{% set cromwellServerName = env['deployment'] + '-cromwell' %}
+{% set cloudsqlName = env['deployment'] + '-cloudsql' %}
+
 resources:
-  - name: {{ properties['cromwell_server_name'] }}
-    type: compute.v1.instance
-    properties:
-      zone: {{ properties['zone'] }}
-      machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/{{ properties["cromwell_server_machine_type"] }}
-      minCpuPlatform: Intel Skylake
-      address: $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
-      serviceAccounts:
-        - email: {{ properties['service_account_email'] }}
-          scopes:
-            - https://www.googleapis.com/auth/cloud-platform
-      disks:
-        - deviceName: boot
-          type: PERSISTENT
-          boot: true
-          autoDelete: true
-          initializeParams:
-            sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
-            diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
-            diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
 
-  - name: {{ properties['cromwell_server_name'] }}-static-ip
-    type: compute.v1.address
-    properties:
-      ipVersion: IPV4
+- name: {{ networkName }}
+  type: compute.v1.network
+  properties:
+    autoCreateSubnetworks: false
+- name: {{ subNetworkName }}
+  type: compute.v1.subnetwork
+  properties:
+    network: $(ref.{{ networkName }}.selfLink)
+    ipCidrRange: 10.10.0.0/16
+    region: {{ properties["region"] }}
 
-  - name: {{ properties['cromwell_server_name'] }}-cloud-sql
-    type: sqladmin.v1beta4.instance
-    properties:
-      tier: {{ properties['cromwell_cloudsql_instance_type']
-      databaseVersion: MYSQL_5_7
-      storageType: SSD
-      storageSize: {{ properties['cromwell_cloudsql_initial_size'] }}
-      backup: true
-      storageAutoIncrease: true
-      authorizedNetworks:
-        - $(ref.{{ properties['cromwell_server_name'] }}-static-ip.externalAddress
+{% if properties['ssh_source_ranges'] %}
+- name: {{ networkName }}-ssh-restricted
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.{{ networkName }}.selfLink)
+    sourceRanges: {{ properties['ssh_source_ranges'] }}
+    targetTags: ["cromwell-ssh-restricted"]
+    priority: 1000
+    allowed:
+    - IPProtocol: TCP
+      ports: ["22"]
+    - IPProtocol: ICMP
+{% endif %}
 
-  - name: {{ properties['cromwell_server_name'] }}-root-user
-    type: sqladmin.v1beta4.user
-    properties:
-      name: root
-      password: {{ properties['cromwell_cloudsql_password'] }}
-      instance: {{ properties['cromwell_server_name'] }}-cloud-sql
+- name: {{ staticIpName }}
+  type: compute.v1.address
+  properties:
+    region: {{ properties["region"] }}
+    networkTier: PREMIUM
 
-  - name: {{ properties['cromwell_server_name'] }}-database-table
-    type: sqladmin.v1beta4.database
-    properties:
-      name: {{ properties['cromwell_database_name'] }}
-      instance: {{ properties['cromwell_server_name'] }}-cloud-sql
+- name: {{ cloudsqlName }}
+  type: sqladmin.v1beta4.instance
+  properties:
+    backendType: SECOND_GEN
+    instanceType: CLOUD_SQL_INSTANCE
+    databaseVersion: MYSQL_5_7
+    region: {{ properties['region'] }}
+    {% if properties.get('labels', None): %}
+    labels:
+    {%   for k, v in properties['labels'].items(): %}
+      {{ "{}: {}".format(k, v) }}
+    {%   endfor %}
+    {% endif %}
+    settings:
+      tier: {{ properties['cromwell_cloudsql_instance_type'] }}
+      dataDiskSizeGb: {{ properties['cromwell_cloudsql_initial_size'] }}
+      dataDiskType: PD_SSD
+      storageAutoResize: true
+      replicationType: SYNCHRONOUS
+      locationPreference:
+        zone: {{ properties['zone'] }}
+      activationPolicy: ALWAYS
+      backupConfiguration:
+        enabled: true
+        binaryLogEnabled: true
+      ipConfiguration:
+        authorizedNetworks: [{ value: $(ref.{{ staticIpName }}.address)/32 }]
+  metadata:
+    dependsOn:
+      - {{ staticIpName }}
+
+- name: {{ cromwellServerName }}
+  type: compute.v1.instance
+  properties:
+    region: {{ properties['region'] }}
+    zone: {{ properties['zone'] }}
+    machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/{{ properties["cromwell_server_machine_type"] }}
+    minCpuPlatform: Intel Skylake
+    serviceAccounts:
+      - email: {{ properties['service_account_email'] }}
+        scopes:
+          - https://www.googleapis.com/auth/cloud-platform
+    tags:
+      items:
+        - cromwell-ssh-restricted
+    {% if properties.get('labels', None): %}
+    labels:
+    {%   for k, v in properties['labels'].items(): %}
+      {{ "{}: {}".format(k, v) }}
+    {%   endfor %}
+    {% endif %}
+    disks:
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+          diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
+          diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
+    networkInterfaces:
+    - subnetwork: $(ref.{{ subNetworkName }}.selfLink)
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+        natIP: $(ref.{{ staticIpName }}.address)
+    metadata:
+      dependsOn:
+        - {{ cloudsqlName }}
+      items:
+        - key: startup-script
+          value: |
+            {{ imports["../startup-scripts/cromwell.py"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"]) }}
+        - key: cromwell-service
+          value: |
+            {{ imports["../cromwell-configs/systemd/cromwell.service"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"]) }}
+        - key: papi-v2-conf
+          value: |
+            {{ imports["../cromwell-configs/PAPI.v2.conf"]|indent(12) }}
+        - key: cloudsql-name
+          value: {{ cloudsqlName }}
+        - key: cloudsql-ip
+          value: $(ref.{{ cloudsqlName }}.ipAddresses[0].ipAddress)
