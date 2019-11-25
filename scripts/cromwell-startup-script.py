@@ -27,6 +27,8 @@ JAR_DIR="${INSTALL_DIR}/jar"
 CONFIG_DIR="${INSTALL_DIR}/config"
 LCONFIG="${CONFIG_DIR}/jes.conf"
 
+GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
+
 def create_directories():
     print "Create directories..."
     if not os.path.exists(INSTALL_DIR): os.makedirs(INSTALL_DIR)
@@ -72,7 +74,7 @@ def install_cromwell():
             continue
         url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", VERSION, jar_basename])
         print "Intalling {} from {}".format(jar_basename, url)
-        result = requests.get(url)
+        response = requests.get(url)
         if not response.ok: raise Exception("Failed to get {} from URL: {}".format(jar_basename, url))
         with open(jar_basename, "wb") as f:
             f.write(r.content)
@@ -81,8 +83,20 @@ def install_cromwell():
 
 #-- install_cromwell
 
-gsutil cp ${CONFIG} ${LCONFIG}
-perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
+def install_cromwell_config():
+    #gsutil cp ${CONFIG} ${LCONFIG}
+    #perl -p -i -e "s/cromwell-mysql:3306/${DB_NAME}:3306/g" ${LCONFIG}
+    papi_conf_path = os.path.join(CONFIG_DIR, 'papi.conf')
+    if os.path.exists(papi_conf_path): return
+
+    url = "/".join([GOOGLE_URL, 'papi_conf'])
+    response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
+    if not response.ok: raise Exception("GET failed for {}".format(url))
+    with open(papi_conf_path, 'w') as f:
+        f.write(response.content)
+
+#-- install_cromwell_config
+
 
 # Cromwell server start-up wrapper
 # Assumes that you have at least 25G RAM available
