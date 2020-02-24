@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os, requests, subprocess, sys
+import os, pip, subprocess, sys
 
 CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
-INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'ccdg', 'cromwell-' + CROMWELL_VERSION)
+INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'cromwell')
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
 CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
@@ -25,6 +25,8 @@ def install_packages():
         'default-jdk',
         'default-mysql-client-core',
         'python-pip',
+        'python3-dev',
+        'python3-setuptools',
         'less',
         'vim',
         ]
@@ -37,7 +39,8 @@ def install_packages():
         print("Failed to install packages with apt-get install. Trying again in 5 seconds")
         time.sleep(5)
 
-    subprocess.check_call(['pip', 'install', 'jinja2'])
+    # Python deps
+    pip.main(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
 
     print("Install pacakges...DONE")
 
@@ -47,6 +50,7 @@ def install_cromwell():
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/cromwell-${VERSION}.jar && mv cromwell-${VERSION}.jar ${JAR_DIR}/
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
     print("Install cromwell...")
+    import requests, yaml
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
         jar_basename = name + "-" + CROMWELL_VERSION + "." + "jar"
@@ -71,7 +75,7 @@ def install_cromwell_config():
     #DB_NAME=$(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/mysql-database-name -H "Metadata-Flavor: Google")
     fn = os.path.join(CONFIG_DIR, 'PAPI.v2.conf')
     if os.path.exists(fn):
-        print("Already installed cromwell profile.d config...SKIPPING")
+        print("Already installed cromwell PAPI v2 config...SKIPPING")
     sys.stderr.write("Install cromwell PAPI v2 config...")
     from jinja2 import Template
     papi_template = Template( _fetch_instance_info(name='papi-v2-conf') )
@@ -84,7 +88,7 @@ def install_cromwell_config():
 
 def add_cromwell_profile():
     fn = os.path.join(os.path.sep, 'etc', 'profile.d', 'cromwell.sh')
-    print("Installing supernova profile.d script to {}".format(fn))
+    print("Installing cromwell profile.d script to {}".format(fn))
     if os.path.exists(fn):
         print("Already installed cromwell profile.d config...SKIPPING")
         return
@@ -114,10 +118,11 @@ def _fetch_and_save_instance_info(name, fn):
 #-- _fetch_and_save_instance_info
 
 def _fetch_instance_info(name):
+    import requests, yaml
     url = "/".join([GOOGLE_URL, name])
     response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
     if not response.ok: raise Exception("GET failed for {}".format(url))
-    return response.content
+    return response.text
 
 #-- _fetch_instance_info
 
