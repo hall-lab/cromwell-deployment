@@ -86,6 +86,14 @@ def install_cromwell_config():
 
 #-- install_cromwell_config
 
+def install_cromshell():
+    os.chdir("/opt")
+    cmd = ["git", "clone", "git@github.com:broadinstitute/cromshell.git"]
+    print("RUNNING: {}".format(" ".join(cmd)))
+    subprocess.check_call(cmd)
+
+#-- install_cromshell
+
 def add_cromwell_profile():
     fn = os.path.join(os.path.sep, 'etc', 'profile.d', 'cromwell.sh')
     print("Installing cromwell profile.d script to {}".format(fn))
@@ -148,6 +156,7 @@ if __name__ == '__main__':
     install_packages()
     install_cromwell()
     install_cromwell_config()
+    install_cromshell()
     add_cromwell_profile()
     add_and_start_cromwell_service()
     configure_cromwell_database()
