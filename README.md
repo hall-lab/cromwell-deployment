@@ -51,10 +51,13 @@ $ gcloud deployment-manager deployments create cromwell1 --config cromwell.yaml
 The fingerprint of the deployment is nBuQdHhB0JYSE85Y0hkzjQ==
 Waiting for create [operation-1558469542478-5896b777900d3-3b747d21-13cf4243]...done.                              
 Create operation operation-1558469542478-5896b777900d3-3b747d21-13cf4243 completed successfully.
-NAME               TYPE                       STATE      ERRORS  INTENT
-cromwell1-cloudsql   sqladmin.v1beta4.instance  COMPLETED  []
-cromwell1-cromwell   compute.v1.instance        COMPLETED  []
-cromwell1-static-ip  compute.v1.address         COMPLETED  []
+NAME                          TYPE                       STATE      ERRORS  INTENT
+cromwell1-cloudsql            sqladmin.v1beta4.instance  COMPLETED  []
+cromwell1-cromwell            compute.v1.instance        COMPLETED  []
+cromwell1-static-ip           compute.v1.address         COMPLETED  []
+cromwell1-net                 compute.v1.network         COMPLETED  []
+cromwell1-net-ssh-restricted  compute.v1.firewall        COMPLETED  []
+cromwell1-subnet              compute.v1.subnetwork      COMPLETED  []
 ```
 
 ### Assests Created
@@ -66,6 +69,9 @@ This is list of assets created in the deployment. All assests are preppended wit
 | static IP | *-static-ip* | An IP for the crowmell server to only allow DB connections to the cloud SQL instance. |
 | cromwell server VM | *-cromwell* | The cromwell server. Start workflows, and querythe SQL DB from here. |
 | cloud sql | *-cloudsql* | SQL database VM adn Server. |
+| network | *network* | network for instances and firewalls |
+| subnet | *subnetwork* |subnet for the network|
+| firewall | *firewall* |restrict access to the network|
 
 ## Verify the `cromwell` deployment
 
