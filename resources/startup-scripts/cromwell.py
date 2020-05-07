@@ -90,7 +90,7 @@ def install_cromwell_config():
 
 def install_cromshell():
     os.chdir("/opt")
-    cmd = ["git", "clone", "git@github.com:broadinstitute/cromshell.git"]
+    cmd = ["git", "clone", "https://github.com/broadinstitute/cromshell.git"]
     print("RUNNING: {}".format(" ".join(cmd)))
     subprocess.check_call(cmd)
 
