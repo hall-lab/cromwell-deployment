@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, pip, subprocess, sys
+import os, subprocess, sys
 
 CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
@@ -24,7 +24,8 @@ def install_packages():
         'curl',
         'default-jdk',
         'default-mysql-client-core',
-        'python-pip',
+        'git',
+        'python3-pip',
         'python3-dev',
         'python3-setuptools',
         'less',
@@ -40,6 +41,7 @@ def install_packages():
         time.sleep(5)
 
     # Python deps
+    import pip
     pip.main(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
 
     print("Install pacakges...DONE")
