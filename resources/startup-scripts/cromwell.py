@@ -51,19 +51,20 @@ def install_packages():
 def install_cromwell():
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/cromwell-${VERSION}.jar && mv cromwell-${VERSION}.jar ${JAR_DIR}/
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
-    print("Install cromwell...")
+    print("Install cromwell and womtool...")
     import requests, yaml
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
-        jar_basename = name + "-" + CROMWELL_VERSION + "." + "jar"
-        jar_fn = os.path.join(JAR_DIR, jar_basename)
+        print("Install {} version {} ...".format(name, CROMWELL_VERSION))
+        jar_fn = os.path.join(JAR_DIR, ".".join([name, "jar"])
         if os.path.exists(jar_fn):
-            print("{} already installed...SKIPPING".format(jar_basename))
+            print("Already installed at {} ...".format(jar_fn))
             continue
-        url = "/".join(["https://github.com/broadinstitute/cromwell/releases/download", CROMWELL_VERSION, jar_basename])
-        print("Intalling {} from {}".format(jar_basename, url))
+        url = "https://github.com/broadinstitute/cromwell/releases/download/{0}/{1}-{0}.jar".format(CROMWELL_VERSION, name)
+        print("URL {}".format(url))
         response = requests.get(url)
         if not response.ok: raise Exception("GET failed for {}".format(url))
+        print("Writing content to {}".format(jar_fn))
         with open(jar_fn, "wb") as f:
             f.write(response.content)
 
