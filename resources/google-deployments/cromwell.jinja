@@ -19,12 +19,12 @@ resources:
     region: {{ properties["region"] }}
 
 {% if properties['ssh_source_ranges'] %}
-- name: {{ networkName }}-ssh-restricted
+- name: {{ networkName }}-ssh-allowed
   type: compute.v1.firewall
   properties:
     network: $(ref.{{ networkName }}.selfLink)
     sourceRanges: {{ properties['ssh_source_ranges'] }}
-    targetTags: ["cromwell-ssh-restricted"]
+    targetTags: ["cromwell-ssh-allowed"]
     priority: 1000
     allowed:
     - IPProtocol: TCP
@@ -82,7 +82,7 @@ resources:
           - https://www.googleapis.com/auth/cloud-platform
     tags:
       items:
-        - cromwell-ssh-restricted
+        - cromwell-ssh-allowed
     {% if properties.get('labels', None): %}
     labels:
     {%   for k, v in properties['labels'].items(): %}

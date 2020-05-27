@@ -14,6 +14,7 @@ required:
 - cromwell_version
 - region
 - service_account_email
+- ssh_source_ranges
 - zone
 
 properties:
@@ -64,7 +65,7 @@ properties:
 
     ssh_source_ranges:
       type        : array
-      description : Restrict cromwell compute instance access to a whitelist of IP addresses via a firewall. No firewall is created if no IPs are given.
+      description : Allow SSH access to the cromwell compute instance from a whitelist of IP addresses via a firewall. Use CIDR notation. To allow connections from any IP (not recommended) use "0.0.0.0/0".
 
     zone:
       type: string
