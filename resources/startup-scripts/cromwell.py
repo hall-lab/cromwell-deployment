@@ -56,7 +56,7 @@ def install_cromwell():
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
         print("Install {} version {} ...".format(name, CROMWELL_VERSION))
-        jar_fn = os.path.join(JAR_DIR, ".".join([name, "jar"])
+        jar_fn = os.path.join(JAR_DIR, ".".join([name, "jar"]))
         if os.path.exists(jar_fn):
             print("Already installed at {} ...".format(jar_fn))
             continue
