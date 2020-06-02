@@ -47,6 +47,11 @@ properties:
       type: string
       default: n1-standard-8
 
+    cromwell_server_service_mem:
+      description: Amount of memory to be allocated to the cromwell service. We have been setting it to be 4 Gb less than the total machine memory. The default reflects this, as the n1-standard-8 has 32 Gb of memory.
+      type: integer
+      default: 28
+
     cromwell_version:
       description: Version of cromwell to use.
       type: number

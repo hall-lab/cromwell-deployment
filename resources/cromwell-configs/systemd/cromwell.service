@@ -11,7 +11,7 @@ RestartSec=5
 WorkingDirectory=/opt/cromwell
 Environment=MYSQL=@CROMWELL_CLOUDSQL_PASSWORD@
 Environment=LOG_MODE=standard
-ExecStart=/usr/bin/java -Xmx90G -Dconfig.file=/opt/cromwell/config/PAPI.v2.conf -jar /opt/cromwell/jar/cromwell.jar server
+ExecStart=/usr/bin/java -Xmx@CROMWELL_SERVER_SERVICE_MEM@G -Dconfig.file=/opt/cromwell/config/PAPI.v2.conf -jar /opt/cromwell/jar/cromwell.jar server
 
 [Install]
 WantedBy=multi-user.target

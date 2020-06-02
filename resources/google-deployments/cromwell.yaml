@@ -14,6 +14,7 @@ resources:
       cromwell_version:                39
       #cromwell_server_machine_type:    n1-standard-8
       #cromwell_server_boot_disk_size:  10
+      #cromwell_server_service_mem:     28
 
       #cromwell_cloudsql_instance_type: db-n1-standard-8
       #cromwell_cloudsql_initial_size:  1000
