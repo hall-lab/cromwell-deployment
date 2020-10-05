@@ -1,4 +1,4 @@
-# Cromwell Deployer (`cromployer`)
+# Cromwell Deployment
 
 This repository contains scripts and resources to deploy a [cromwell][0] server and database. Currently implemented for Google Cloud.
 
@@ -87,7 +87,7 @@ $ gcloud ssh cromwell1-cromwell
 
 ```
 you@cromwell1-cromwell:~$ ps aux | grep java
-root     14565 45.1  1.8 32349732 583008 ?     Ssl  20:16   0:29 /usr/bin/java -Xmx25000M -Dconfig.file=/opt/ccdg/cromwell-39/config/PAPI.v2.conf -jar /opt/ccdg/cromwell-39/jar/cromwell-39.jar server
+root     14565 45.1  1.8 32349732 583008 ?     Ssl  20:16   0:29 /usr/bin/java -Xmx25000M -Dconfig.file=/opt/cromwell-39/config/PAPI.v2.conf -jar /opt/cromwell-39/jar/cromwell-39.jar server
 you@cromwell1-cromwell:~$ curl 'http://localhost:8000/engine/v1/version' && echo
 {"cromwell":"39"}
 ```
@@ -99,7 +99,7 @@ journalctl -u cromwell
 ### Optionally, edit the config and resatart the cromwell service
 
 ```
-sudo vim /opt/ccdg/cromwell*/config/PAPI.v2.conf
+sudo vim /opt/cromwell*/config/PAPI.v2.conf
 sudo service cromwell restart
 ```
 # Delete a Deployment
@@ -130,10 +130,10 @@ $ journalctl -u cromwell -f
 $ sudo systemctl restart cromwell
 ```
 ## MySQL
-MySQL service is setup as Google "Cloud SQL" instance. For security purposes, it configured to only accept connections from the cromwell server. The host and password are located in the jdbc url in `/opt/ccdg/cromwell-39/config/PAPI.v2.conf`.
+MySQL service is setup as Google "Cloud SQL" instance. For security purposes, it configured to only accept connections from the cromwell server. The host and password are located in the jdbc url in `/opt/cromwell-39/config/PAPI.v2.conf`.
 ```
 $ gcloud compute ssh cromwell1-cromwell
-$ grep jdbc:mysql /opt/ccdg/cromwell-39/config/PAPI.v2.conf
+$ grep jdbc:mysql /opt/cromwell-39/config/PAPI.v2.conf
     url = "jdbc:mysql://1.2.3.4:3306/cromwell?rewriteBatchedStatements=true&useSSL=false"
 $ mysql -h 1.2.3.4 -u root -D cromwell -p
 MySQL [cromwell]> 
