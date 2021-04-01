@@ -2,8 +2,6 @@
 
 This repository contains scripts and resources to deploy a [cromwell][0] server and database. Currently implemented for Google Cloud.
 
-_(This project is in active development, and may change!)_
-
 [0]: https://github.com/broadinstitute/cromwell
 [1]: https://cloud.google.com
 
