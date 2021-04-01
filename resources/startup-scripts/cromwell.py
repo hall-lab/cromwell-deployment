@@ -9,17 +9,15 @@ SERVICE_ACCOUNT_EMAIL='@SERVICE_ACCOUNT_EMAIL@'
 PROJECT='@PROJECT@'
 
 INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'cromwell')
-BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
 CONFIG_DIR = os.path.join(INSTALL_DIR, "config")
 GOOGLE_URL = "http://metadata.google.internal/computeMetadata/v1/instance/attributes"
 
 def create_directories():
     print("Create directories...")
-    if not os.path.exists(INSTALL_DIR): os.makedirs(INSTALL_DIR)
-    if not os.path.exists(BIN_DIR): os.makedirs(BIN_DIR)
-    if not os.path.exists(JAR_DIR): os.makedirs(JAR_DIR)
-    if not os.path.exists(CONFIG_DIR): os.makedirs(CONFIG_DIR)
+    for dn in (INSTALL_DIR, JAR_DIR, CONFIG_DIR):
+        if not os.path.exists(dn):
+            os.makedirs(dn)
 
 def install_packages():
     print("Install pacakges...")
@@ -73,7 +71,6 @@ def install_cromwell():
             f.write(response.content)
 
     print("Install cromwell...DONE")
-
 #-- install_cromwell
 
 def install_cromwell_config():
@@ -93,7 +90,6 @@ def install_cromwell_config():
                                       project=PROJECT,
                                       service_account_email=SERVICE_ACCOUNT_EMAIL,
                                       cromwell_gcs_root=CROMWELL_GCS_ROOT) )
-
 #-- install_cromwell_config
 
 def install_cromshell():
@@ -101,27 +97,13 @@ def install_cromshell():
     cmd = ["git", "clone", "https://github.com/broadinstitute/cromshell.git"]
     print("RUNNING: {}".format(" ".join(cmd)))
     subprocess.check_call(cmd)
-
 #-- install_cromshell
-
-def add_cromwell_profile():
-    fn = os.path.join(os.path.sep, 'etc', 'profile.d', 'cromwell.sh')
-    print("Installing cromwell profile.d script to {}".format(fn))
-    if os.path.exists(fn):
-        print("Already installed cromwell profile.d config...SKIPPING")
-        return
-
-    with open(fn, "w") as f:
-        f.write('PATH={}:"${{PATH}}"'.format(BIN_DIR) + "\n")
-
-#-- add_cromwell_profile
 
 def add_and_start_cromwell_service():
     _fetch_and_save_instance_info(name='cromwell-service', fn=os.path.join(os.path.sep, 'etc', 'systemd', 'system', 'cromwell.service'))
     print("Start cromwell service...")
     subprocess.check_call(['systemctl', 'daemon-reload'])
     subprocess.check_call(['systemctl', 'start', 'cromwell'])
-
 #-- add_cromwell_service
 
 def _fetch_and_save_instance_info(name, fn):
@@ -132,7 +114,6 @@ def _fetch_and_save_instance_info(name, fn):
     content = _fetch_instance_info(name)
     with open(fn, 'w') as f:
         f.write(content)
-
 #-- _fetch_and_save_instance_info
 
 def _fetch_instance_info(name):
@@ -141,7 +122,6 @@ def _fetch_instance_info(name):
     response = requests.get(url, headers={'Metadata-Flavor': 'Google'})
     if not response.ok: raise Exception("GET failed for {}".format(url))
     return response.text
-
 #-- _fetch_instance_info
 
 if __name__ == '__main__':
@@ -150,8 +130,6 @@ if __name__ == '__main__':
     install_cromwell()
     install_cromwell_config()
     install_cromshell()
-    add_cromwell_profile()
     add_and_start_cromwell_service()
     print("Startup script...DONE")
-
 #-- __main__
