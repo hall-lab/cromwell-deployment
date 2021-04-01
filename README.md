@@ -130,11 +130,21 @@ $ journalctl -u cromwell -f
 $ sudo systemctl restart cromwell
 ```
 ## MySQL
-MySQL service is setup as Google "Cloud SQL" instance. For security purposes, it configured to only accept connections from the cromwell server. The host and password are located in the jdbc url in `/opt/cromwell-39/config/PAPI.v2.conf`.
+MySQL service is setup as Google "Cloud SQL" instance. For security purposes, it configured to only accept connections from the cromwell server. The host and password are located in the jdbc url in `/opt/cromwell-39/config/PAPI.v2.conf`. 
 ```
+# Log into the cromwell instance
 $ gcloud compute ssh cromwell1-cromwell
-$ grep jdbc:mysql /opt/cromwell-39/config/PAPI.v2.conf
-    url = "jdbc:mysql://1.2.3.4:3306/cromwell?rewriteBatchedStatements=true&useSSL=false"
-$ mysql -h 1.2.3.4 -u root -D cromwell -p
+
+# Grab the SQL IP from the PAPI.v2.conf
+$ MYSQL_IP=$(grep jdbc:mysql /opt/cromwell/config/PAPI.v2.conf | awk -F/ '{print $3}' | awk -F: '{print $1}')
+$ echo $MYSQL_IP
+1.2.3.4
+
+# Show the mysql password
+$ grep password /opt/cromwell/config/PAPI.v2.conf | awk -F= '{print $2}' | sed 's/\s*//g'
+cromwell
+
+# Log into the database
+$ mysql -h $MYSQL_IP -u root -D cromwell -p
 MySQL [cromwell]> 
 ```
