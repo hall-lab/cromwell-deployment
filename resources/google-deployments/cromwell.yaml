@@ -22,7 +22,7 @@ resources:
       cromwell_cloudsql_password:      <PASSWORD>
       cromwell_gcs_root:               "gs://<BUCKET_NAME>/cromwell-exeuctions"
 
-      labels:
+      labels: # USED ON DEPLOYMENT ASSESTS, NOT CROMWELL COMPUTE, ADD IN CROMWELL LABELS JSON WHEN SUBMITTING CROMWELL WF
         user:     <USER>
         project:  <PROJECT>
         pipeline: <PIPELINE>
