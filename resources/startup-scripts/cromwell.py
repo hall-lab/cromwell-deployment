@@ -144,23 +144,6 @@ def _fetch_instance_info(name):
 
 #-- _fetch_instance_info
 
-def configure_cromwell_database():
-    sys.stderr.write("Configure cromwell database...\n")
-
-    cloudsql_name = _fetch_instance_info('cloudsql-name')
-    sys.stderr.write("Updating root password...\n")
-    rv = subprocess.call(["gcloud", "sql", "users", "set-password", "root", "--instance", cloudsql_name, "--password", CROMWELL_CLOUDSQL_PASSWORD, "--host", "%"])
-    if rv != 0: raise Exception("Failed to update mysql root user password!")
-
-    cloudsql_ip = _fetch_instance_info('cloudsql-ip')
-    sys.stderr.write("Creating cromwell database...\n")
-    lenv = os.environ.copy()
-    lenv['MYSQL_PWD'] = CROMWELL_CLOUDSQL_PASSWORD
-    rv = subprocess.call(['mysql', '-h', cloudsql_ip, '-u', 'root', '-e', 'CREATE DATABASE IF NOT EXISTS cromwell;'], env=lenv)
-    if rv != 0: raise Exception("Failed to create the mysql cromwell database")
-
-#-- configure_cromwell_database
-
 if __name__ == '__main__':
     create_directories()
     install_packages()
@@ -169,7 +152,6 @@ if __name__ == '__main__':
     install_cromshell()
     add_cromwell_profile()
     add_and_start_cromwell_service()
-    configure_cromwell_database()
     print("Startup script...DONE")
 
 #-- __main__

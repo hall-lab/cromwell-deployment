@@ -69,6 +69,23 @@ resources:
     dependsOn:
       - {{ staticIpName }}
 
+- name: cromwell
+  type: gcp-types/sqladmin-v1beta4:databases
+  properties:
+    name: cromwell
+    instance: $(ref.{{ cloudsqlName }}.name)
+    charset: utf8
+- name: root-user-entity
+  type: gcp-types/sqladmin-v1beta4:users
+  properties:
+    instance: $(ref.{{ cloudsqlName }}.name)
+    name: root
+    host: "%"
+    password: {{ properties["cromwell_cloudsql_password"] }}
+  metadata:
+    dependsOn:
+      - cromwell
+
 - name: {{ cromwellServerName }}
   type: compute.v1.instance
   properties:
