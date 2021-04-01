@@ -4,6 +4,10 @@ import os, subprocess, sys
 
 CROMWELL_CLOUDSQL_PASSWORD='@CROMWELL_CLOUDSQL_PASSWORD@'
 CROMWELL_VERSION='@CROMWELL_VERSION@'
+CROMWELL_GCS_ROOT='@CROMWELL_GCS_ROOT@'
+SERVICE_ACCOUNT_EMAIL='@SERVICE_ACCOUNT_EMAIL@'
+PROJECT='@PROJECT@'
+
 INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'cromwell')
 BIN_DIR = os.path.join(INSTALL_DIR, "bin")
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
@@ -85,7 +89,10 @@ def install_cromwell_config():
     ip = _fetch_instance_info(name='cloudsql-ip')
     params = { "ip": ip, "password": CROMWELL_CLOUDSQL_PASSWORD }
     with open(fn, 'w') as f:
-        f.write( papi_template.render(cloudsql=params) )
+        f.write( papi_template.render(cloudsql=params,
+                                      project=PROJECT,
+                                      service_account_EMAIL=SERVICE_ACCOUNT_EMAIL,
+                                      cromwell_gcs_root=CROMWELL_GCS_ROOT) )
 
 #-- install_cromwell_config
 
