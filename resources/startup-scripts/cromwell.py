@@ -91,7 +91,7 @@ def install_cromwell_config():
     with open(fn, 'w') as f:
         f.write( papi_template.render(cloudsql=params,
                                       project=PROJECT,
-                                      service_account_EMAIL=SERVICE_ACCOUNT_EMAIL,
+                                      service_account_email=SERVICE_ACCOUNT_EMAIL,
                                       cromwell_gcs_root=CROMWELL_GCS_ROOT) )
 
 #-- install_cromwell_config
