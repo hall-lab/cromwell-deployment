@@ -42,6 +42,13 @@ Update these properties need to be set in the YAML (`resources/google-deployment
 
 Optionally, edit the `resources/cromwell-configs/PAPI.v2.conf` file to adjust the any of the cromwell server configuration. Do not edit the *DB* section, as it is populated with the Cloud SQL IP and root user password.
 
+## Enable required APIs
+Prior to running the deployment, set up billing for your project and enable the required APIs by following this link and selecting the desired project.
+
+Make sure that billing is enabled for your Google Cloud Platform project. [Learn how to enable billing](https://cloud.google.com/billing/docs/how-to/modify-project).
+
+If this is the first time running this in the project, be sure to [enable the following APIs: Genomics API, Compute Engine API, Google Cloud Storage JSON API, Cloud SQL Admin API, Cloud Deployment Manager V2 API](https://console.cloud.google.com/flows/enableapi?apiid=genomics,compute,storage_api,sqladmin,deploymentmanager)
+
 ## Create the Deployment
 
 In an authenticated Google Cloud session, enter the `resources/google-deployments` directory. Run the command below to create the deployment named _cromwell1_. The deployemnt name will be prepended to all assoiciated assets.
@@ -105,7 +112,7 @@ sudo service cromwell restart
 # Delete a Deployment
 
 ```sh
-$ gcloud deployment-manager delete cromwell1
+$ gcloud deployment-manager deployments delete cromwell1
 ```
 # Services
 
