@@ -58,14 +58,16 @@ def install_cromwell():
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
     print("Install cromwell and womtool...")
     import requests, yaml
+    dn_version = CROMWELL_VERSION
+    bn_version = dn_version.replace("_", "-").replace("hotfix-", "")
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
-        print("Install {} version {} ...".format(name, CROMWELL_VERSION))
+        print("Install {0} version {1} ...".format(name, dn_version))
         jar_fn = os.path.join(JAR_DIR, ".".join([name, "jar"]))
         if os.path.exists(jar_fn):
             print("Already installed at {} ...".format(jar_fn))
             continue
-        url = "https://github.com/broadinstitute/cromwell/releases/download/{0}/{1}-{0}.jar".format(CROMWELL_VERSION, name)
+        url = "https://github.com/broadinstitute/cromwell/releases/download/{0}/{1}-{2}.jar".format(dn_version, name, bn_version)
         print("URL {}".format(url))
         response = requests.get(url)
         if not response.ok: raise Exception("GET failed for {}".format(url))
@@ -91,7 +93,7 @@ def install_cromwell_config():
     with open(fn, 'w') as f:
         f.write(papi_template.render(
             cloudsql=params,
-            cromwell_gcs_root=CROMWELL_GCS_ROOT
+            cromwell_gcs_root=CROMWELL_GCS_ROOT,
             project=PROJECT,
             service_account_email=SERVICE_ACCOUNT_EMAIL,
             vpc_network=VPC_NETWORK,
