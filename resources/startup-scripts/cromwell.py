@@ -45,8 +45,8 @@ def install_packages():
         time.sleep(5)
 
     # Python deps
-    import pip
-    pip.main(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
+    from pip._internal import main as pipmain
+    pipmain(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
 
     print("Install pacakges...DONE")
 

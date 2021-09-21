@@ -54,7 +54,8 @@ properties:
 
     cromwell_version:
       description: Version of cromwell to use.
-      type: number
+      type: string
+      minimum: 60
 
     labels:
       description: Labels to apply to the compute and cloud sql instances.
