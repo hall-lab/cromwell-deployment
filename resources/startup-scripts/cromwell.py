@@ -27,6 +27,8 @@ def install_packages():
         'default-jdk',
         'default-mysql-client-core',
         'git',
+        'jq',
+        'mailutils',
         'python3-pip',
         'python3-dev',
         'python3-setuptools',
