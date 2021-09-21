@@ -1,6 +1,11 @@
 
 {% set networkName = env['deployment'] + '-net' %}
 {% set subNetworkName = env['deployment'] + '-subnet' %}
+{% if use_vpc_network %}
+{%   set vpc_network = networkName %}
+{% else %}
+{%   set vpc_network = "" %}
+{% endif %}
 {% set staticIpName = env['deployment'] + '-static-ip' %}
 {% set cromwellServerName = env['deployment'] + '-cromwell' %}
 {% set cloudsqlName = env['deployment'] + '-cloudsql' %}
@@ -127,7 +132,7 @@ resources:
       items:
         - key: startup-script
           value: |
-            {{ imports["../startup-scripts/cromwell.py"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@SERVICE_ACCOUNT_EMAIL@",properties["service_account_email"])|replace("@PROJECT@",env["project"])|replace("@CROMWELL_GCS_ROOT@",properties["cromwell_gcs_root"]) }}
+            {{ imports["../startup-scripts/cromwell.py"]|indent(12)|replace("@VPC_NETWORK@",vpc_network)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@SERVICE_ACCOUNT_EMAIL@",properties["service_account_email"])|replace("@PROJECT@",env["project"])|replace("@CROMWELL_GCS_ROOT@",properties["cromwell_gcs_root"]) }}
         - key: cromwell-service
           value: |
             {{ imports["../cromwell-configs/systemd/cromwell.service"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@CROMWELL_SERVER_SERVICE_MEM@",properties["cromwell_server_service_mem"]) }}

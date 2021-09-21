@@ -15,6 +15,7 @@ required:
 - region
 - service_account_email
 - ssh_source_ranges
+- use_vpc_network
 - zone
 
 properties:
@@ -53,9 +54,8 @@ properties:
       default: 28
 
     cromwell_version:
-      description: Version of cromwell to use.
+      description: Version of cromwell to use. Minimum version is "68_hotfix_8e12ab5"
       type: string
-      minimum: 60
 
     labels:
       description: Labels to apply to the compute and cloud sql instances.
@@ -72,6 +72,11 @@ properties:
     ssh_source_ranges:
       type        : array
       description : Allow SSH access to the cromwell compute instance from a whitelist of IP addresses via a firewall. Use CIDR notation. To allow connections from any IP (not recommended) use "0.0.0.0/0".
+
+    use_vpc_network:
+      description: Have cromwell use the cromwell net created as the VPC network. This will result in all VMs being placed on this network (instead of default) and they will not have public IPs.
+      type: boolean
+      default: false
 
     zone:
       type: string
