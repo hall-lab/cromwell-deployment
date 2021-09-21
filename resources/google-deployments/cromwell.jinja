@@ -22,6 +22,9 @@ resources:
     network: $(ref.{{ networkName }}.selfLink)
     ipCidrRange: 10.10.0.0/16
     region: {{ properties["region"] }}
+    {% if vpc_network %}
+    privateIpGoogleAccess: true
+    {% endif %}
 
 {% if properties['ssh_source_ranges'] %}
 - name: {{ networkName }}-ssh-allowed
