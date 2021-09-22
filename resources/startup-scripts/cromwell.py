@@ -8,6 +8,7 @@ CROMWELL_GCS_ROOT='@CROMWELL_GCS_ROOT@'
 SERVICE_ACCOUNT_EMAIL='@SERVICE_ACCOUNT_EMAIL@'
 PROJECT='@PROJECT@'
 VPC_NETWORK='@VPC_NETWORK@'
+VPC_SUBNETWORK='@VPC_SUBNETWORK@'
 
 INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'cromwell')
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
@@ -97,6 +98,7 @@ def install_cromwell_config():
             project=PROJECT,
             service_account_email=SERVICE_ACCOUNT_EMAIL,
             vpc_network=VPC_NETWORK,
+            vpc_subnetwork=VPC_SUBNETWORK,
             ))
 #-- install_cromwell_config
 
