@@ -7,6 +7,8 @@ CROMWELL_VERSION='@CROMWELL_VERSION@'
 CROMWELL_GCS_ROOT='@CROMWELL_GCS_ROOT@'
 SERVICE_ACCOUNT_EMAIL='@SERVICE_ACCOUNT_EMAIL@'
 PROJECT='@PROJECT@'
+VPC_NETWORK='@VPC_NETWORK@'
+VPC_SUBNETWORK='@VPC_SUBNETWORK@'
 
 INSTALL_DIR = os.path.join(os.path.sep, 'opt', 'cromwell')
 JAR_DIR = os.path.join(INSTALL_DIR, "jar")
@@ -27,6 +29,8 @@ def install_packages():
         'default-jdk',
         'default-mysql-client-core',
         'git',
+        'jq',
+        'mailutils',
         'python3-pip',
         'python3-dev',
         'python3-setuptools',
@@ -43,8 +47,8 @@ def install_packages():
         time.sleep(5)
 
     # Python deps
-    import pip
-    pip.main(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
+    from pip._internal import main as pipmain
+    pipmain(["install", "jinja2", "pyyaml", "requests>=2.20.0"])
 
     print("Install pacakges...DONE")
 
@@ -55,14 +59,16 @@ def install_cromwell():
     #curl -OL https://github.com/broadinstitute/cromwell/releases/download/${VERSION}/womtool-${VERSION}.jar && mv womtool-${VERSION}.jar ${JAR_DIR}/
     print("Install cromwell and womtool...")
     import requests, yaml
+    dn_version = CROMWELL_VERSION
+    bn_version = dn_version.replace("_", "-").replace("hotfix-", "")
     os.chdir(JAR_DIR)
     for name in "cromwell", "womtool":
-        print("Install {} version {} ...".format(name, CROMWELL_VERSION))
+        print("Install {0} version {1} ...".format(name, dn_version))
         jar_fn = os.path.join(JAR_DIR, ".".join([name, "jar"]))
         if os.path.exists(jar_fn):
             print("Already installed at {} ...".format(jar_fn))
             continue
-        url = "https://github.com/broadinstitute/cromwell/releases/download/{0}/{1}-{0}.jar".format(CROMWELL_VERSION, name)
+        url = "https://github.com/broadinstitute/cromwell/releases/download/{0}/{1}-{2}.jar".format(dn_version, name, bn_version)
         print("URL {}".format(url))
         response = requests.get(url)
         if not response.ok: raise Exception("GET failed for {}".format(url))
@@ -86,10 +92,14 @@ def install_cromwell_config():
     ip = _fetch_instance_info(name='cloudsql-ip')
     params = { "ip": ip, "password": CROMWELL_CLOUDSQL_PASSWORD }
     with open(fn, 'w') as f:
-        f.write( papi_template.render(cloudsql=params,
-                                      project=PROJECT,
-                                      service_account_email=SERVICE_ACCOUNT_EMAIL,
-                                      cromwell_gcs_root=CROMWELL_GCS_ROOT) )
+        f.write(papi_template.render(
+            cloudsql=params,
+            cromwell_gcs_root=CROMWELL_GCS_ROOT,
+            project=PROJECT,
+            service_account_email=SERVICE_ACCOUNT_EMAIL,
+            vpc_network=VPC_NETWORK,
+            vpc_subnetwork=VPC_SUBNETWORK,
+            ))
 #-- install_cromwell_config
 
 def install_cromshell():

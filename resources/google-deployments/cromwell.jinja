@@ -1,6 +1,13 @@
 
 {% set networkName = env['deployment'] + '-net' %}
 {% set subNetworkName = env['deployment'] + '-subnet' %}
+{% if properties["use_vpc_network"] %}
+{%   set vpc_network = networkName %}
+{%   set vpc_subnetwork = subNetworkName %}
+{% else %}
+{%   set vpc_network = "" %}
+{%   set vpc_subnetwork = "" %}
+{% endif %}
 {% set staticIpName = env['deployment'] + '-static-ip' %}
 {% set cromwellServerName = env['deployment'] + '-cromwell' %}
 {% set cloudsqlName = env['deployment'] + '-cloudsql' %}
@@ -15,8 +22,11 @@ resources:
   type: compute.v1.subnetwork
   properties:
     network: $(ref.{{ networkName }}.selfLink)
-    ipCidrRange: 10.10.0.0/16
+    ipCidrRange: {{ properties["vpc_cidr"] }}
     region: {{ properties["region"] }}
+    {% if vpc_network %}
+    privateIpGoogleAccess: true
+    {% endif %}
 
 {% if properties['ssh_source_ranges'] %}
 - name: {{ networkName }}-ssh-allowed
@@ -112,7 +122,7 @@ resources:
         boot: true
         autoDelete: true
         initializeParams:
-          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-10
           diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/pd-standard
           diskSizeGb: {{ properties['cromwell_server_boot_disk_size'] }}
     networkInterfaces:
@@ -127,7 +137,7 @@ resources:
       items:
         - key: startup-script
           value: |
-            {{ imports["../startup-scripts/cromwell.py"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@SERVICE_ACCOUNT_EMAIL@",properties["service_account_email"])|replace("@PROJECT@",env["project"])|replace("@CROMWELL_GCS_ROOT@",properties["cromwell_gcs_root"]) }}
+            {{ imports["../startup-scripts/cromwell.py"]|indent(12)|replace("@VPC_NETWORK@",vpc_network)|replace("@VPC_SUBNETWORK@",vpc_subnetwork)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@SERVICE_ACCOUNT_EMAIL@",properties["service_account_email"])|replace("@PROJECT@",env["project"])|replace("@CROMWELL_GCS_ROOT@",properties["cromwell_gcs_root"]) }}
         - key: cromwell-service
           value: |
             {{ imports["../cromwell-configs/systemd/cromwell.service"]|indent(12)|replace("@CROMWELL_VERSION@",properties["cromwell_version"])|replace("@CROMWELL_CLOUDSQL_PASSWORD@",properties["cromwell_cloudsql_password"])|replace("@CROMWELL_SERVER_SERVICE_MEM@",properties["cromwell_server_service_mem"]) }}

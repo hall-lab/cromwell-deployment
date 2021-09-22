@@ -20,7 +20,10 @@ resources:
       #cromwell_cloudsql_initial_size:  1000
       #cromwell_database_name:          cromwell
       cromwell_cloudsql_password:      <PASSWORD>
-      cromwell_gcs_root:               "gs://<BUCKET_NAME>/cromwell-exeuctions"
+      cromwell_gcs_root:               "gs://<BUCKET_NAME>/cromwell-executions"
+
+      use_vpc_network:                  true
+      vpc_cidr:                         10.10.0.0/16
 
       labels: # USED ON DEPLOYMENT ASSESTS, NOT CROMWELL COMPUTE, ADD IN CROMWELL LABELS JSON WHEN SUBMITTING CROMWELL WF
         user:     <USER>
