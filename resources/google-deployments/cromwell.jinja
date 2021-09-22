@@ -1,7 +1,7 @@
 
 {% set networkName = env['deployment'] + '-net' %}
 {% set subNetworkName = env['deployment'] + '-subnet' %}
-{% if use_vpc_network %}
+{% if properties["use_vpc_network"] %}
 {%   set vpc_network = networkName %}
 {%   set vpc_subnetwork = subNetworkName %}
 {% else %}
