@@ -23,6 +23,7 @@ resources:
       cromwell_gcs_root:               "gs://<BUCKET_NAME>/cromwell-exeuctions"
 
       use_vpc_network:                  true
+      vpc_cidr:                         10.10.0.0/16
 
       labels: # USED ON DEPLOYMENT ASSESTS, NOT CROMWELL COMPUTE, ADD IN CROMWELL LABELS JSON WHEN SUBMITTING CROMWELL WF
         user:     <USER>

@@ -16,6 +16,7 @@ required:
 - service_account_email
 - ssh_source_ranges
 - use_vpc_network
+- vpc_cidr
 - zone
 
 properties:
@@ -77,6 +78,11 @@ properties:
       description: Have cromwell use the cromwell net created as the VPC network. This will result in all VMs being placed on this network (instead of default) and they will not have public IPs.
       type: boolean
       default: false
+
+    vpc_cidr:
+      description: ip allocation range for the VPC network cidr notation. Should be a class A private address range, e.g. "10.0.0.0 to 10.255.255.255" .
+      type: string
+      default: 10.10.0.0./16
 
     zone:
       type: string

@@ -22,7 +22,7 @@ resources:
   type: compute.v1.subnetwork
   properties:
     network: $(ref.{{ networkName }}.selfLink)
-    ipCidrRange: 10.10.0.0/16
+    ipCidrRange: {{ properties["vpc_cidr"] }}
     region: {{ properties["region"] }}
     {% if vpc_network %}
     privateIpGoogleAccess: true
