@@ -1,0 +1,83 @@
+include required(classpath("application"))
+
+backend {
+  default = "LSF"
+  providers {
+    LSF {
+      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+      config {
+        root = "{{CROMWELL_ROOT_DIR}}"
+        runtime-attributes = """
+        Int cpu = 1
+        Int memory_gb = 4
+        String? docker
+        """
+
+        submit = """
+        LSF_DOCKER_PRESERVE_ENVIRONMENT=false LSF_DOCKER_VOLUMES='{{LSF_DOCKER_VOLUMES}}' \
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -oo {{CROMWELL_ROOT_DIR}}/logs/%J.out \
+        -a 'docker({{LSF_DEFAULT_DOCKER}})' \
+        -q '{{LSF_QUEUE}} \
+        -g '{{LSF_JOB_GROUP}}' \
+        -G '{{LSF_USER_GROUP}}' \
+        -M ${memory_gb}G \
+        -n ${cpu} \
+        -R "span[hosts=1] select[mem>${memory_gb}G] rusage[mem=${memory_gb}G]" \
+        /bin/bash ${script}
+        """
+
+        submit-docker = """
+        LSF_DOCKER_PRESERVE_ENVIRONMENT=false LSF_DOCKER_VOLUMES='${cwd}:${docker_cwd} {{LSF_DOCKER_VOLUMES}}' \
+        bsub \
+        -J ${job_name} \
+        -cwd ${cwd} \
+        -oo {{CROMWELL_ROOT_DIR}}/logs/%J.out \
+        -q '{{LSF_QUEUE}} \
+        -g '{{LSF_JOB_GROUP}}' \
+        -G '{{LSF_USER_GROUP}}' \
+        -a "docker(${docker})" \
+        -M ${memory_gb}G \
+        -n ${cpu} \
+        -R "span[hosts=1] select[mem>${memory_gb}G] rusage[mem=${memory_gb}G]" \
+        /bin/bash ${script}
+        """
+
+        kill = "bkill ${job_id}"
+        docker-kill = "bkill ${job_id}"
+        check-alive = "bjobs -noheader -o stat ${job_id} | /bin/grep 'PEND\\|RUN'"
+        job-id-regex = "Job <(\\d+)>.*"
+      }
+    }
+  }
+}
+
+workflow-options {
+  workflow-log-dir = "{{CROMWELL_ROOT_DIR}}/wf-logs"
+}
+
+call-caching {
+  enabled = true
+  invalidate-bad-cache-results = true
+}
+
+database {
+  profile = "slick.jdbc.HsqldbProfile$"
+  db {
+    driver = "org.hsqldb.jdbcDriver"
+    url = """
+    jdbc:hsqldb:file:{{CROMWELL_ROOT_DIR}}/db;
+    shutdown=false;
+    hsqldb.default_table_type=cached;hsqldb.tx=mvcc;
+    hsqldb.result_max_memory_rows=10000;
+    hsqldb.large_data=true;
+    hsqldb.applog=1;
+    hsqldb.lob_compressed=true;
+    hsqldb.script_format=3
+    """
+    connectionTimeout = 120000
+    numThreads = 1
+   }
+}
