@@ -1,4 +1,4 @@
-import click, jinja2, os, yaml
+import click, jinja2, os, sys, yaml
 
 from cromulent import cc
 
@@ -9,3 +9,12 @@ def cli():
     Cromwell on MGI Compute
     """
     pass
+
+@click.command(short_help="dump the yaml attributes needed for cromwell config")
+def yaml_cmd():
+    """
+    Output the a YAML string with the needed attributes top generate
+    the cromwell config.
+    """
+    sys.stdout.write(yaml.dump(dict.fromkeys(cc.config_attributes())))
+cli.add_command(yaml_cmd, "yaml")

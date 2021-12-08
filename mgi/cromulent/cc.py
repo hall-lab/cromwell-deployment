@@ -1,7 +1,8 @@
 import jinja2, os, yaml
 
 def config_attributes():
-    return [ "CROMWELL_ROOT_DIR", "LSF_DEFAULT_DOCKER", "LSF_DOCKER_VOLUMES", "LSF_JOB_GROUP",]
+    return [ "CROMWELL_ROOT_DIR", "LSF_DEFAULT_DOCKER", "LSF_DOCKER_VOLUMES",
+            "LSF_JOB_GROUP", "LSF_QUEUE", "LSF_USER_GROUP",]
 #--
  
 def resources_dn():
