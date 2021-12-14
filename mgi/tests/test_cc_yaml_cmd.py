@@ -1,16 +1,16 @@
 import click, unittest
 from click.testing import CliRunner
 
-from cromulent.cli import yaml_cmd
+from cromulent.cli import cc_yaml_cmd as cmd
 
-class CliTest(unittest.TestCase):
-    def test_yaml_cmd(self):
+class CcYamlTest(unittest.TestCase):
+    def test_cc_yaml_cmd(self):
         runner = CliRunner()
 
-        result = runner.invoke(yaml_cmd, ["--help"])
+        result = runner.invoke(cmd, ["--help"])
         self.assertEqual(result.exit_code, 0)
 
-        result = runner.invoke(yaml_cmd, [])
+        result = runner.invoke(cmd, [])
         self.assertEqual(result.exit_code, 0)
         try:
             self.assertEqual(result.exit_code, 0)
